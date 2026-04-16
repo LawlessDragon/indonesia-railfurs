@@ -1,0 +1,27 @@
+# Dependensi
+node_modules/
+vendor/
+
+# Rahasia & konfigurasi lokal
+.env
+.env.*
+!.env.example
+*.local
+*-env-value.txt
+
+# Kredensial service account
+*.json.private
+service-account*.json
+client_secret_*.json
+
+# Build & cache
+dist/
+.vite/
+.cache/
+.vercel/
+.wrangler/
+*.log
+
+# OS
+Thumbs.db
+.DS_Store
