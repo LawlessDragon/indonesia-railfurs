@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="google-site-verification" content="NwP08lz2OuJg5Aynr22hr0ShsXNpcjeDJ5PbHqSkSaI" />
+    <meta name="description" content="Indonesian Railfurs (IRS) — komunitas furry Indonesia pecinta kereta api dan railfans. Menyatukan penggemar fandom furry dan railfans dalam satu wadah perjalanan sejak 2022.">
+    <meta name="keywords" content="railfurs, indonesian railfurs, furry indonesia, furry indo, furs indonesia, railfans indonesia, komunitas furry, komunitas railfans, kereta api indonesia">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://railfurs.my.id/" />
+    <title>Indonesian Railfurs (IRS) — Komunitas Furry & Railfans Indonesia</title>
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48x48.png" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+
+    <!-- Web Manifest -->
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#e94560" />
+
+    <!-- Open Graph / Social -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Indonesian Railfurs (IRS) — Komunitas Furry & Railfans Indonesia" />
+    <meta property="og:description" content="Indonesian Railfurs (IRS) — komunitas furry Indonesia pecinta kereta api dan railfans. Menyatukan penggemar fandom furry dan railfans dalam satu wadah perjalanan sejak 2022." />
+    <meta property="og:url" content="https://railfurs.my.id/" />
+    <meta property="og:image" content="https://railfurs.my.id/android-chrome-512x512.png" />
+    <meta property="og:site_name" content="Indonesian Railfurs" />
+    <meta property="og:locale" content="id_ID" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="Indonesian Railfurs (IRS) — Komunitas Furry & Railfans Indonesia" />
+    <meta name="twitter:description" content="Indonesian Railfurs (IRS) — komunitas furry Indonesia pecinta kereta api dan railfans sejak 2022." />
+    <meta name="twitter:image" content="https://railfurs.my.id/android-chrome-512x512.png" />
+
+    <!-- Structured Data (JSON-LD) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "Indonesian Railfurs",
+      "alternateName": ["IRS", "Railfurs Indonesia"],
+      "url": "https://railfurs.my.id/",
+      "logo": "https://railfurs.my.id/android-chrome-512x512.png",
+      "description": "Komunitas furry Indonesia pecinta kereta api dan railfans (railway enthusiasts), aktif sejak 2022.",
+      "sameAs": [
+        "https://join.railfurs.my.id/",
+        "https://wiki.railfurs.my.id/",
+        "https://www.instagram.com/official_railfurs.id/",
+        "https://www.facebook.com/p/Indonesian-Railfurs-61557390134351/",
+        "https://en.wikifur.com/wiki/Indonesian_Railfurs"
+      ]
+    }
+    </script>
+
+    <!-- Preconnect map tiles (OSM, tanpa API key) -->
+    <link rel="preconnect" href="https://a.tile.openstreetmap.org" crossorigin>
+    <link rel="preconnect" href="https://b.tile.openstreetmap.org" crossorigin>
+    <link rel="preconnect" href="https://c.tile.openstreetmap.org" crossorigin>
+
+    <link rel="dns-prefetch" href="https://static.cloudflareinsights.com">
+
+    <!-- Font Inter (self-hosted) -->
+    <link rel="preload" as="font" type="font/woff2" href="/fonts/inter-latin-400-normal.woff2" crossorigin>
+    <link rel="preload" as="font" type="font/woff2" href="/fonts/inter-latin-900-normal.woff2" crossorigin>
+    <link rel="stylesheet" href="/assets/fonts.css">
+
+    <link rel="preload" as="image" href="/assets/images/joyride.webp" fetchpriority="high" />
+
+    <!-- Leaflet CSS, non-blocking (peta ada jauh di bawah) -->
+    <link rel="stylesheet" href="/assets/leaflet.min.css" media="print" onload="this.media='all';window.dispatchEvent(new Event('resize'))">
+    <noscript><link rel="stylesheet" href="/assets/leaflet.min.css"></noscript>
+
+    <link rel="stylesheet" href="/assets/tailwind.min.css">
+    <link rel="stylesheet" href="/assets/accessibility-fixes.css?v=4">
+    <link rel="stylesheet" href="/assets/enhancements.ofXykwWB.css">
+
+    <!-- CSS kritis (header, above-the-fold, reset scrollbar) -->
+    <style>
+      #root{min-height:100vh}
+      nav{position:fixed;top:0;left:0;right:0;z-index:50}
+      /* Skip link: di luar layar sampai di-fokus */
+      .skip-link{position:fixed;top:0;left:0;background:#000;color:#fff;padding:8px 16px;z-index:1000;text-decoration:none;font-weight:700;transform:translateY(-120%);transition:transform .2s}
+      .skip-link:focus{transform:translateY(0)}
+      /* Tinggi peta diatur React (240px di HP, 440px di desktop). Jangan
+         dipaksa lebih tinggi: canvas-nya jadi kebesaran, kepotong kotaknya
+         sendiri, dan isi peta (titik event) kelihatan turun. */
+      .leaflet-container{min-height:240px}
+      body{font-family:Inter,sans-serif;background-color:#fff;color:#000;overflow-x:hidden}
+      html::-webkit-scrollbar,body::-webkit-scrollbar{display:none}
+      html{scroll-behavior:smooth}
+      html,body{-ms-overflow-style:none;scrollbar-width:none}
+
+      /* Preloader: tampil setelah 200ms, dan punya fallback CSS yang
+         menyembunyikannya di detik ~4.2 kalau JS mati. */
+      #rf-preloader{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:#fff;opacity:0;
+        transition:opacity .55s cubic-bezier(.22,1,.36,1),visibility .55s;
+        animation:rf-pre-in .3s ease .2s forwards,rf-pre-out .5s ease 4.2s forwards}
+      #rf-preloader.rf-preloader--done{animation:none;opacity:0;visibility:hidden;pointer-events:none}
+      .rf-preloader__inner{display:flex;flex-direction:column;align-items:center;gap:16px}
+      .rf-preloader__word{font:900 clamp(1.5rem,4.6vw,2.4rem)/1 Inter,sans-serif;letter-spacing:.34em;text-indent:.34em;color:#000;text-transform:uppercase}
+      .rf-preloader__bar{position:relative;display:block;width:min(210px,50vw);height:2px;background:#e8e8e8;overflow:hidden}
+      .rf-preloader__bar::after{content:"";position:absolute;inset:0;background:#000;transform-origin:left;animation:rf-pre-bar 1.15s cubic-bezier(.65,.05,.36,1) infinite}
+      @keyframes rf-pre-in{from{opacity:0}to{opacity:1}}
+      @keyframes rf-pre-out{from{opacity:1}to{opacity:0;visibility:hidden}}
+      @keyframes rf-pre-bar{0%{transform:scaleX(0) translateX(0)}50%{transform:scaleX(.7) translateX(0)}100%{transform:scaleX(1) translateX(0);opacity:0}}
+      @media (prefers-reduced-motion:reduce){
+        #rf-preloader{animation:rf-pre-in 0s 0s forwards}
+        .rf-preloader__bar::after{animation:none;transform:scaleX(1)}
+      }
+    </style>
+
+    <!-- Bundle utama -->
+    <link rel="modulepreload" href="/assets/index-oejMs2kp.js" crossorigin fetchpriority="high">
+    <script type="module" crossorigin src="/assets/index-oejMs2kp.js"></script>
+    <!-- Lenis lalu enhancement (urutan penting) -->
+    <script src="/assets/lenis.min.js" defer></script>
+    <script src="/assets/enhancements.JY1Odu1u.js" defer></script>
+  </head>
+  <body>
+    <!-- Preloader -->
+    <div id="rf-preloader" aria-hidden="true">
+      <div class="rf-preloader__inner">
+        <span class="rf-preloader__word">Railfurs</span>
+        <span class="rf-preloader__bar"></span>
+      </div>
+    </div>
+    <noscript><style>#rf-preloader{display:none}</style></noscript>
+
+    <!-- Skip link (target #root) -->
+    <a href="#root" class="skip-link">Langsung ke konten utama</a>
+    <div id="root" role="main" tabindex="-1"></div>
+    <script>
+      // Auto redirect untuk path yang mirip/salah
+      (function(){
+        var redirectMap = {
+          'about': '/#about',
+          'tentang': '/#about',
+          'contact': '/#contact',
+          'kontak': '/#contact',
+          'join': 'https://join.railfurs.my.id',
+          'daftar': 'https://join.railfurs.my.id',
+          'register': 'https://join.railfurs.my.id',
+          'wiki': 'https://wiki.railfurs.my.id',
+          'tiket': 'https://tiket.railfurs.my.id',
+          'ticket': 'https://tiket.railfurs.my.id',
+          'event': 'https://wiki.railfurs.my.id/event-furry-indonesia.html',
+          'furry': 'https://wiki.railfurs.my.id/apa-itu-furry.html',
+          'instagram': 'https://www.instagram.com/official_railfurs.id/',
+          'ig': 'https://www.instagram.com/official_railfurs.id/',
+          'facebook': 'https://www.facebook.com/p/Indonesian-Railfurs-61557390134351/',
+          'fb': 'https://www.facebook.com/p/Indonesian-Railfurs-61557390134351/',
+          'credits': '/credits',
+          'credit': '/credits'
+        };
+        var path = window.location.pathname.toLowerCase().replace(/^\/+|\/+$/g, '').split('/')[0];
+        if (path && redirectMap[path]) {
+          var target = redirectMap[path];
+          if (target.startsWith('http')) {
+            window.location.replace(target);
+          } else {
+            window.location.replace(target);
+          }
+        }
+      })();
+    </script>
+  </body>
+</html>
