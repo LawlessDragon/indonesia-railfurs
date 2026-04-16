@@ -1,0 +1,61 @@
+# Security Headers Configuration for Railfurs Web
+# Untuk digunakan di Cloudflare Pages/Workers atau web server lainnya
+
+/*
+  # Content Security Policy
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: https://*.tile.openstreetmap.org https://*.basemaps.cartocdn.com https://i.ibb.co https://i.ibb.co.com blob:; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://*.tile.openstreetmap.org https://*.basemaps.cartocdn.com https://static.cloudflareinsights.com https://railfurs.my.id https://api.imgbb.com https://script.google.com https://script.googleusercontent.com https://api.ipify.org https://api64.ipify.org; frame-ancestors 'none'; base-uri 'self'; form-action 'self';
+  
+  # HTTP Strict Transport Security
+  Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
+  
+  # Cross-Origin Opener Policy
+  Cross-Origin-Opener-Policy: same-origin
+  
+  # X-Frame-Options (backup untuk CSP frame-ancestors)
+  X-Frame-Options: DENY
+  
+  # X-Content-Type-Options
+  X-Content-Type-Options: nosniff
+  
+  # Referrer Policy
+  Referrer-Policy: strict-origin-when-cross-origin
+  
+  # Permissions Policy
+  Permissions-Policy: accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()
+
+# ==========================================================================
+# Caching
+# Secara default Cloudflare Pages mengirim "Cache-Control: public, max-age=0,
+# must-revalidate" untuk semua file -> browser revalidasi ke server tiap kali
+# refresh. Aturan di bawah bikin aset statis di-cache lebih lama.
+# ==========================================================================
+
+# Bundle ber-hash (nama file berubah tiap build) -> aman di-cache selamanya.
+# Kalau rebuild, nama file baru otomatis bikin cache-nya "baru" juga.
+/assets/index-*
+  Cache-Control: public, max-age=31536000, immutable
+
+# Font jarang berubah -> cache lama.
+/fonts/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# Gambar statis -> 30 hari, habis itu boleh dipakai dulu (stale) sambil revalidasi.
+/assets/images/*
+  Cache-Control: public, max-age=2592000, stale-while-revalidate=86400
+
+# CSS/JS non-hash (tailwind, leaflet, dll) -> 1 hari fresh, lalu stale-while-revalidate.
+/assets/tailwind.min.css
+  Cache-Control: public, max-age=86400, stale-while-revalidate=604800
+/assets/leaflet.min.css
+  Cache-Control: public, max-age=86400, stale-while-revalidate=604800
+/assets/accessibility-fixes.css
+  Cache-Control: public, max-age=86400, stale-while-revalidate=604800
+/assets/fonts.css
+  Cache-Control: public, max-age=86400, stale-while-revalidate=604800
+
+# Enhancement layer (preloader, reveal gambar, Lenis, label peta).
+# Nama filenya ber-hash (mis. enhancements.NM2lFNR1.js), jadi aman di-cache
+# lama: kalau isinya berubah, namanya wajib diganti -> URL-nya baru.
+# (Kalau nanti diedit, JANGAN lupa ganti nama filenya + referensi di index.html.)
+/assets/enhancements*
+  Cache-Control: public, max-age=31536000, immutable
