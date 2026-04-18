@@ -1,0 +1,49 @@
+{
+  "version": 1,
+  "redirects": [
+    { "from": "/about", "to": "https://railfurs.my.id/#about", "code": 301 },
+    { "from": "/tentang", "to": "https://railfurs.my.id/#about", "code": 301 },
+    { "from": "/contact", "to": "https://railfurs.my.id/#contact", "code": 301 },
+    { "from": "/kontak", "to": "https://railfurs.my.id/#contact", "code": 301 },
+    { "from": "/join", "to": "https://join.railfurs.my.id", "code": 301 },
+    { "from": "/daftar", "to": "https://join.railfurs.my.id", "code": 301 },
+    { "from": "/register", "to": "https://join.railfurs.my.id", "code": 301 },
+    { "from": "/wiki", "to": "https://wiki.railfurs.my.id", "code": 301 },
+    { "from": "/tiket", "to": "https://tiket.railfurs.my.id", "code": 301 },
+    { "from": "/ticket", "to": "https://tiket.railfurs.my.id", "code": 301 },
+    { "from": "/event", "to": "https://wiki.railfurs.my.id/event-furry-indonesia.html", "code": 301 },
+    { "from": "/events", "to": "https://wiki.railfurs.my.id/event-furry-indonesia.html", "code": 301 },
+    { "from": "/furry", "to": "https://wiki.railfurs.my.id/apa-itu-furry.html", "code": 301 },
+    { "from": "/instagram", "to": "https://www.instagram.com/official_railfurs.id/", "code": 301 },
+    { "from": "/ig", "to": "https://www.instagram.com/official_railfurs.id/", "code": 301 },
+    { "from": "/facebook", "to": "https://www.facebook.com/p/Indonesian-Railfurs-61557390134351/", "code": 301 },
+    { "from": "/fb", "to": "https://www.facebook.com/p/Indonesian-Railfurs-61557390134351/", "code": 301 },
+    { "from": "/credits", "to": "https://railfurs.my.id/credits", "code": 301 },
+    { "from": "/credit", "to": "https://railfurs.my.id/credits", "code": 301 },
+    { "from": "/admin", "to": "https://t.me/railfurs_admin1", "code": 301 },
+    { "from": "/telegram", "to": "https://t.me/railfurs_admin1", "code": 301 }
+  ],
+  "errorPages": {
+    "404": "/404.html",
+    "500": "/error.html?code=500",
+    "403": "/error.html?code=403",
+    "401": "/error.html?code=401"
+  },
+  "similarPathMatching": {
+    "enabled": true,
+    "threshold": 70,
+    "paths": {
+      "jon": "/join",
+      "jion": "/join",
+      "daftarr": "/daftar",
+      "wikii": "/wiki",
+      "tikett": "/tiket",
+      "ticke": "/tiket",
+      "even": "/event",
+      "evet": "/event",
+      "instgram": "/instagram",
+      "insta": "/instagram",
+      "facebok": "/facebook"
+    }
+  }
+}
