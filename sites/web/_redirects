@@ -1,0 +1,44 @@
+# Redirects Configuration for Railfurs Web
+# Untuk Cloudflare Pages
+
+# Shortcuts/aliases
+/about              /#about              301
+/tentang            /#about              301
+/contact            /#contact            301
+/kontak             /#contact            301
+/join               https://join.railfurs.my.id 301
+/daftar             https://join.railfurs.my.id 301
+/register           https://join.railfurs.my.id 301
+/wiki               https://wiki.railfurs.my.id 301
+/tiket              https://tiket.railfurs.my.id 301
+/ticket             https://tiket.railfurs.my.id 301
+/event              https://wiki.railfurs.my.id/event-furry-indonesia.html 301
+/events             https://wiki.railfurs.my.id/event-furry-indonesia.html 301
+/furry              https://wiki.railfurs.my.id/apa-itu-furry.html 301
+/instagram          https://www.instagram.com/official_railfurs.id/ 301
+/ig                 https://www.instagram.com/official_railfurs.id/ 301
+/facebook           https://www.facebook.com/p/Indonesian-Railfurs-61557390134351/ 301
+/fb                 https://www.facebook.com/p/Indonesian-Railfurs-61557390134351/ 301
+
+# PENTING: jangan arahkan ke /credits.html.
+# Cloudflare Pages otomatis me-redirect /credits.html -> /credits (308),
+# jadi kalau /credits diarahkan balik ke /credits.html hasilnya LOOP tanpa henti.
+# Cukup biarkan /credits dilayani apa adanya oleh Pages (dari file credits.html).
+/credit             /credits             301
+
+# Fuzzy matching untuk typo umum
+/jon                https://join.railfurs.my.id 301
+/jion               https://join.railfurs.my.id 301
+/daftarr            https://join.railfurs.my.id 301
+/wikii              https://wiki.railfurs.my.id 301
+/tikett             https://tiket.railfurs.my.id 301
+/ticke              https://tiket.railfurs.my.id 301
+/even               https://wiki.railfurs.my.id/event-furry-indonesia.html 301
+/evet               https://wiki.railfurs.my.id/event-furry-indonesia.html 301
+
+# SPA fallback - semua route yang tidak ditemukan kembali ke index.html
+# CATATAN: /art-submission TANPA rule di sini. Pages otomatis menyajikan
+# art-submission.html untuk /art-submission (clean URL, sama seperti /credits).
+# Jangan tambahkan rule /art-submission -> .html: itu bikin LOOP 308
+# (rule + redirect otomatis .html->extensionless saling lempar).
+/*                  /index.html          200
