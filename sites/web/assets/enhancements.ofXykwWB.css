@@ -1,0 +1,116 @@
+/* Layer tambahan: reveal gambar, peta (label + zoom + atribusi). */
+
+/* Transisi antar halaman (Chrome 126+). Browser lain mengabaikan. */
+@view-transition { navigation: auto; }
+
+/* Lenis (smooth scroll, self-hosted) */
+html.lenis,
+html.lenis body { height: auto; }
+.lenis.lenis-smooth { scroll-behavior: auto !important; }
+.lenis.lenis-smooth [data-lenis-prevent] { overscroll-behavior: contain; }
+.lenis.lenis-stopped { overflow: hidden; }
+.lenis.lenis-smooth iframe { pointer-events: none; }
+
+/* Reveal gambar yang belum selesai dimuat */
+img.rf-img { opacity: 0; transition: opacity .7s cubic-bezier(.22, 1, .36, 1); }
+img.rf-img.rf-img--in { opacity: 1; }
+
+/* Tile OSM dibikin monokrom + dipudarkan biar nyatu sama tema hitam-putih.
+   Latar putih supaya pudarnya jatuh ke warna bersih (default Leaflet #ddd). */
+.leaflet-container { background: #fff; }
+.leaflet-container .leaflet-tile-pane {
+  filter: grayscale(1) brightness(1.16) contrast(.86);
+  opacity: .68;
+}
+
+/* Label nama kota: nempel di bawah/atas titiknya (jarak 4px). Posisi diatur
+   di CSS supaya bisa beda per ukuran layar. */
+.leaflet-container .rf-map-label {
+  position: absolute;
+  left: 50%;
+  top: 100%;
+  margin-top: 4px;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  pointer-events: none;
+  font: 900 9px/1 Inter, sans-serif;
+  letter-spacing: .1em;
+  text-indent: .1em;
+  text-transform: uppercase;
+  color: #000;
+  background: #fff;
+  border: 1px solid #000;
+  border-radius: 2px;
+  padding: 2px 5px;
+  box-shadow: 0 1px 5px rgba(0, 0, 0, .2);
+}
+
+/* Layar kecil: peta di-zoom lebih rapat, jadi Bogor & Solo dinaikkan ke
+   atas titiknya supaya labelnya tidak bertumpuk. */
+@media (max-width: 767px) {
+  .leaflet-container .rf-map-label {
+    font-size: 8px;
+    padding: 2px 4px;
+  }
+  .leaflet-container .rf-map-label--bogor,
+  .leaflet-container .rf-map-label--solo {
+    top: auto;
+    bottom: 100%;
+    margin: 0 0 4px;
+  }
+}
+
+/* Petunjuk zoom (muncul saat kursor di atas peta, hilang setelah diklik) */
+.leaflet-container .rf-map-hint {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 900;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity .2s;
+  font: 700 9px/1 Inter, sans-serif;
+  letter-spacing: .12em;
+  text-indent: .12em;
+  text-transform: uppercase;
+  color: #fff;
+  background: rgba(0, 0, 0, .78);
+  padding: 5px 8px;
+  border-radius: 2px;
+}
+@media (min-width: 768px) {
+  .leaflet-container:hover .rf-map-hint { opacity: 1; }
+}
+.leaflet-container.rf-map--zoom .rf-map-hint { opacity: 0; }
+
+/* Legenda peta pakai blur yang mahal tapi nyaris tidak kelihatan. */
+.leaflet-container [class*="backdrop-blur"] {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+/* Atribusi OpenStreetMap (wajib per tile usage policy) */
+.leaflet-container .rf-osm-attrib {
+  position: absolute;
+  right: 6px;
+  bottom: 46px;
+  z-index: 800;
+  font: 700 9px/1.2 Inter, sans-serif;
+  letter-spacing: .02em;
+  color: #52525b;
+  background: rgba(255, 255, 255, .82);
+  padding: 2px 5px;
+  border-radius: 3px;
+  text-decoration: none;
+}
+.leaflet-container .rf-osm-attrib:hover { color: #000; background: #fff; }
+
+/* Di HP tidak ada bar legenda, jadi atribusi cukup nempel di bawah. */
+@media (max-width: 767px) {
+  .leaflet-container .rf-osm-attrib { bottom: 6px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  img.rf-img { opacity: 1 !important; transition: none !important; }
+}

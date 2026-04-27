@@ -1,0 +1,116 @@
+/* Perbaikan aksesibilitas & kontras */
+
+.text-gray-300 {
+  color: #9ca3af !important;
+}
+
+footer .text-gray-600 {
+  color: #a1a1aa !important;
+}
+
+/* Marker peta: kotak marker TIDAK dibesarkan, karena kalau dibesarkan titik
+   peta bergeser ~15px dari koordinat aslinya dan label kota jadi jauh dari
+   titiknya. Area tap yang lega diatur dari JS (pilih marker terdekat). */
+.leaflet-marker-icon {
+  min-width: 0 !important;
+  min-height: 0 !important;
+  display: block !important;
+}
+
+button:focus-visible {
+  outline: 2px solid #e94560 !important;
+  outline-offset: 2px !important;
+}
+
+/* Tombol tanpa nama aksesibel: beri penanda visual */
+button[aria-label=""]:not(:has(svg)),
+button:not([aria-label]):not(:has(svg)):not(:has(span)):not(:has(img)) {
+  position: relative;
+}
+
+button[aria-label=""]:not(:has(svg))::before,
+button:not([aria-label]):not(:has(svg)):not(:has(span)):not(:has(img))::before {
+  content: "•";
+  font-size: 1.5rem;
+}
+
+/* Target sentuh minimum untuk elemen interaktif */
+a, button, input, select, textarea {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* Kotak 44px di atas bikin teks link nempel ke atas kotak, bukan ke tengah.
+   Untuk link yang jadi flex item (footer & nav), efeknya teks jadi tidak
+   sejajar dengan teks sebelahnya. Isinya dipusatkan. */
+nav a, footer a, footer button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.text-\\[9px\\] {
+  font-size: 9px;
+  color: #52525b !important;
+}
+
+footer span {
+  color: #d4d4d8 !important;
+}
+
+.text-gray-400 {
+  color: #a1a1aa !important;
+}
+
+.text-gray-500 {
+  color: #71717a !important;
+}
+
+/* Skip link: benar-benar di luar layar sampai di-fokus */
+.skip-link {
+  position: fixed;
+  top: 0;
+  left: 0;
+  background: #000;
+  color: #fff;
+  padding: 8px 16px;
+  z-index: 1000;
+  font-weight: 700;
+  transform: translateY(-120%);
+  transition: transform 0.2s;
+}
+
+.skip-link:focus {
+  transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+.will-change-transform {
+  will-change: transform;
+}
+
+img {
+  aspect-ratio: attr(width) / attr(height);
+}
+
+/* Tinggi peta diatur React (240px di HP, 440px di desktop). Jangan dipaksa
+   lebih tinggi: canvas-nya jadi kebesaran, kepotong kotaknya sendiri, dan
+   isi peta (titik event) kelihatan turun. */
+.leaflet-container {
+  min-height: 240px;
+}
+
+.leaflet-tile-container img {
+  width: 256px !important;
+  height: 256px !important;
+}
