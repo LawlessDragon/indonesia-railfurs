@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Behind the Website — Lawless</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="preload" as="image" href="assets/images/lawless-dragon.webp" fetchpriority="high">
+
+<style>
+/* Cross-document view transition (index <-> credits), diabaikan browser lama */
+@view-transition{navigation:auto}
+
+:root{
+  --bg:#fafafa;
+  --text:#111;
+  --soft:#555;
+  --line:#dcdcdc;
+  --transition:.45s cubic-bezier(.22,.61,.36,1);
+}
+
+*,
+*::before,
+*::after{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+}
+
+html{
+  scroll-behavior:smooth;
+  overflow-x:hidden;
+  scrollbar-width:none;
+  -ms-overflow-style:none;
+}
+
+html::-webkit-scrollbar,
+body::-webkit-scrollbar{
+  display:none;
+}
+
+body{
+  font-family:Inter,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  overflow-x:hidden;
+  position:relative;
+}
+
+body::before{
+  content:"";
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  background-image:radial-gradient(#000 1px,transparent 1px);
+  background-size:28px 28px;
+  opacity:.045;
+  z-index:-2;
+}
+
+body::after{
+  content:"";
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  background:
+    linear-gradient(90deg,transparent 49.9%,rgba(0,0,0,.025) 50%,transparent 50.1%),
+    linear-gradient(transparent 49.9%,rgba(0,0,0,.025) 50%,transparent 50.1%);
+  background-size:180px 180px;
+  z-index:-3;
+}
+
+img{
+  display:block;
+  width:100%;
+  height:auto;
+  max-width:100%;
+}
+
+a{
+  color:inherit;
+  text-decoration:none;
+}
+
+::selection{
+  background:#111;
+  color:#fff;
+}
+
+.wrapper{
+  width:min(1100px,calc(100% - 40px));
+  margin-inline:auto;
+  overflow:hidden;
+}
+
+.nav{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:34px 0;
+  gap:20px;
+}
+
+.back{
+  font-family:"JetBrains Mono";
+  font-size:.8rem;
+  letter-spacing:.14em;
+  text-transform:uppercase;
+  opacity:.65;
+  transition:.3s;
+}
+
+.back:hover{
+  opacity:1;
+  transform:translateX(-5px);
+}
+
+.mood{
+  font-family:"JetBrains Mono";
+  font-size:.78rem;
+  opacity:.5;
+}
+
+.hero{
+  padding-top:10px;
+  padding-bottom:120px;
+}
+
+.hero-image{
+  position:relative;
+  overflow:hidden;
+  border-radius:30px;
+  aspect-ratio:16/9;
+  background:#ececec;
+  isolation:isolate;
+}
+
+.hero-image img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  transition:1.2s;
+}
+
+.hero-image:hover img{
+  transform:scale(1.03);
+}
+
+.intro{
+  margin-top:70px;
+  display:grid;
+  grid-template-columns:1.2fr .8fr;
+  gap:70px;
+  align-items:start;
+}
+
+.intro h1{
+  font-size:clamp(4rem,8vw,7rem);
+  line-height:.88;
+  letter-spacing:-.05em;
+  font-weight:900;
+}
+
+.intro em{
+  font-family:"Instrument Serif";
+  font-style:italic;
+  font-weight:400;
+}
+
+.intro p{
+  padding-top:15px;
+  max-width:420px;
+  line-height:2;
+  color:var(--soft);
+}
+
+.doodle{
+  position:absolute;
+  font-family:"JetBrains Mono";
+  font-size:.8rem;
+  opacity:.25;
+  pointer-events:none;
+  user-select:none;
+}
+
+.d1{top:18%;left:6%}
+.d2{right:8%;top:33%}
+.d3{bottom:8%;left:18%}
+
+.space{
+  height:180px;
+}
+
+.story{
+  display:grid;
+  grid-template-columns:.8fr 1.2fr;
+  gap:90px;
+  align-items:start;
+  margin-bottom:180px;
+}
+
+.story h2{
+  font-size:clamp(2.8rem,5vw,4.8rem);
+  line-height:.95;
+  letter-spacing:-.04em;
+  margin-top:18px;
+}
+
+.story p{
+  line-height:2;
+  color:var(--soft);
+  max-width:560px;
+  margin-bottom:34px;
+}
+
+.eyebrow{
+  font-family:"JetBrains Mono";
+  font-size:.75rem;
+  letter-spacing:.18em;
+  text-transform:uppercase;
+  opacity:.5;
+}
+
+.quote{
+  margin:140px auto;
+  max-width:760px;
+  text-align:center;
+}
+
+.quote p{
+  font-family:"Instrument Serif";
+  font-size:clamp(2rem,5vw,4rem);
+  font-style:italic;
+  line-height:1.2;
+}
+
+.about-grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:24px;
+  margin:140px 0;
+}
+
+.about-card{
+  background:#fff;
+  border:1px solid #e8e8e8;
+  border-radius:28px;
+  padding:35px;
+  transition:var(--transition);
+}
+
+.about-card:hover{
+  transform:translateY(-6px);
+  box-shadow:0 20px 45px rgba(0,0,0,.05);
+}
+
+.about-card span{
+  font-family:"JetBrains Mono";
+  font-size:.75rem;
+  text-transform:uppercase;
+  opacity:.45;
+}
+
+.about-card h4{
+  font-size:2rem;
+  margin:15px 0;
+}
+
+.about-card p{
+  margin-top:12px;
+  line-height:1.9;
+  color:#666;
+}
+
+.big{
+  grid-column:span 2;
+  padding:55px;
+}
+
+.big h3{
+  font-size:clamp(2.5rem,4vw,4rem);
+  line-height:1;
+  margin-top:20px;
+}
+
+.wide{
+  grid-column:span 2;
+}
+
+.editorial{
+  display:grid;
+  grid-template-columns:1fr .9fr;
+  gap:70px;
+  align-items:center;
+  margin:180px 0;
+}
+
+.editorial-image{
+  overflow:hidden;
+  border-radius:24px;
+}
+
+.editorial-image img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  transition:1s;
+}
+
+.editorial-image:hover img{
+  transform:scale(1.04);
+}
+
+.editorial-text span{
+  font-family:"JetBrains Mono";
+  font-size:.75rem;
+  opacity:.5;
+  text-transform:uppercase;
+}
+
+.editorial-text h2{
+  font-size:clamp(3rem,5vw,5rem);
+  line-height:.92;
+  margin:20px 0;
+  letter-spacing:-.05em;
+}
+
+.editorial-text p{
+  line-height:2;
+  color:#666;
+  max-width:430px;
+}
+
+.credits-wrap{
+  margin:220px 0;
+}
+
+.credits-title{
+  margin-bottom:80px;
+}
+
+.credits-title h2{
+  margin-top:18px;
+  font-size:clamp(3rem,6vw,5rem);
+  line-height:.95;
+  letter-spacing:-.05em;
+}
+
+.credit-list{
+  display:flex;
+  flex-direction:column;
+  border-top:1px solid var(--line);
+}
+
+.credit-row{
+  display:grid;
+  grid-template-columns:80px 1fr 260px;
+  gap:40px;
+  padding:42px 0;
+  border-bottom:1px solid var(--line);
+  align-items:start;
+  transition:var(--transition);
+}
+
+.credit-row:hover{
+  padding-left:14px;
+}
+
+.credit-no{
+  font-family:"JetBrains Mono";
+  opacity:.45;
+}
+
+.credit-main h3{
+  font-size:2rem;
+  margin-bottom:12px;
+}
+
+.credit-main p{
+  line-height:2;
+  color:#666;
+  max-width:650px;
+}
+
+.credit-side{
+  display:flex;
+  justify-content:flex-end;
+  text-align:right;
+  font-size:.9rem;
+  color:#999;
+}
+
+.sources{
+  display:grid;
+  grid-template-columns:.8fr 1.2fr;
+  gap:90px;
+  margin:220px 0;
+  align-items:start;
+}
+
+.sources h2{
+  margin-top:18px;
+  font-size:clamp(3rem,5vw,4.8rem);
+  line-height:.95;
+  letter-spacing:-.04em;
+}
+
+.source-item{
+  padding:30px 0;
+  border-bottom:1px dashed #ddd;
+}
+
+.source-item span{
+  display:block;
+  font-weight:700;
+  font-size:1.15rem;
+  margin-bottom:10px;
+}
+
+.source-item p{
+  line-height:2;
+  color:#666;
+}
+
+.ending{
+  text-align:center;
+  padding:220px 0;
+}
+
+.ending-small{
+  font-family:"JetBrains Mono";
+  font-size:.8rem;
+  text-transform:uppercase;
+  opacity:.5;
+  margin-bottom:24px;
+}
+
+.ending h2{
+  font-size:clamp(2.8rem,5vw,5rem);
+  line-height:1.15;
+  letter-spacing:-.04em;
+  max-width:900px;
+  margin:auto;
+}
+
+.ending-button{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding:18px 34px;
+  margin-top:60px;
+  border-radius:999px;
+  border:1px solid #111;
+  transition:var(--transition);
+}
+
+.ending-button:hover{
+  background:#111;
+  color:#fff;
+  transform:translateY(-2px);
+}
+
+footer{
+  padding:60px 0 40px;
+  border-top:1px solid var(--line);
+}
+
+.footer-top{
+  display:flex;
+  justify-content:space-between;
+  gap:60px;
+  padding-bottom:40px;
+}
+
+.footer-top h3{
+  font-size:2rem;
+  margin-bottom:14px;
+}
+
+.footer-top p{
+  max-width:430px;
+  line-height:1.9;
+  color:#666;
+}
+
+.footer-top span{
+  font-family:"JetBrains Mono";
+  font-size:.75rem;
+  text-transform:uppercase;
+  opacity:.5;
+}
+
+.footer-top h4{
+  font-size:3rem;
+  margin-top:15px;
+}
+
+.footer-bottom{
+  display:flex;
+  justify-content:space-between;
+  gap:40px;
+  padding-top:30px;
+  border-top:1px dashed #ddd;
+  font-size:.9rem;
+  line-height:1.8;
+  color:#888;
+}
+
+/* Link tetap sejajar dengan teks biasa */
+.anthro-credit{
+  display:inline;
+  color:var(--soft);
+  transition:.3s;
+  white-space:nowrap;
+}
+
+.anthro-credit:hover{
+  color:var(--text);
+}
+
+.anthro-credit svg{
+  display:inline-block;
+  width:22px;
+  height:20px;
+  margin-right:4px;
+  vertical-align:-.25em;
+}
+
+@media(max-width:900px){
+  .wrapper{
+    width:min(100% - 28px,1100px);
+  }
+
+  .nav{
+    padding:22px 0;
+    flex-wrap:wrap;
+  }
+
+  .hero{
+    padding-bottom:70px;
+  }
+
+  .intro,
+  .story,
+  .editorial,
+  .sources{
+    grid-template-columns:1fr;
+    gap:42px;
+  }
+
+  .intro h1{
+    font-size:clamp(3rem,12vw,5rem);
+  }
+
+  .story,
+  .editorial{
+    margin-bottom:110px;
+  }
+
+  .about-grid{
+    grid-template-columns:1fr;
+    gap:18px;
+  }
+
+  .big,
+  .wide{
+    grid-column:auto;
+    padding:34px;
+  }
+
+  .credits-wrap,
+  .sources{
+    margin:140px 0;
+  }
+
+  .credit-row{
+    grid-template-columns:1fr;
+    gap:14px;
+  }
+
+  .credit-side{
+    justify-content:flex-start;
+    text-align:left;
+  }
+
+  .ending{
+    padding:140px 0;
+  }
+
+  .footer-top,
+  .footer-bottom{
+    flex-direction:column;
+    gap:26px;
+  }
+
+  .footer-bottom{
+    align-items:flex-start;
+  }
+
+  .anthro-credit{
+    white-space:normal;
+  }
+}
+</style>
+</head>
+
+<body>
+<div class="doodle d1">✦ ✦</div>
+<div class="doodle d2">// :)</div>
+<div class="doodle d3">○ ○ ○</div>
+
+<div class="wrapper">
+<nav class="nav">
+  <a href="index.html" class="back">← back</a>
+  <div class="mood">currently redesigning everything.</div>
+</nav>
+
+<section class="hero">
+  <div class="hero-image">
+    <img src="assets/images/lawless-dragon.webp" alt="Lawless" width="1600" height="898" fetchpriority="high" decoding="async">
+  </div>
+
+  <div class="intro">
+    <div>
+      <h1>hi.<br>aku <em>Lawless</em></h1>
+    </div>
+
+    <div>
+      <p>
+        Yang bikin website ini. Masih sering ngubah layout jam 2 pagi,
+        masih sering rename file jadi <b>final-final-revisi-real.html</b>,
+        dan masih percaya kalau website yang enak dibaca lebih penting
+        daripada website yang penuh efek.
+      </p>
+    </div>
+  </div>
+</section>
+
+<section class="story">
+  <div class="story-left">
+    <span class="eyebrow">/ little story</span>
+    <h2>website ini<br>gak lahir<br>karena niat besar.</h2>
+  </div>
+
+  <div class="story-right">
+    <p>
+      Awalnya cuma iseng. Pengen nyimpen informasi yang sering ditanya orang.
+      Terus kepikiran... "kenapa gak sekalian dibikin enak dibaca?"
+    </p>
+
+    <p>
+      Satu halaman berubah jadi lima. Lima berubah jadi sepuluh.
+      CSS dirombak berkali-kali. Layout dibuang. Desain diulang.
+      Dan sampai sekarang... masih belum berhenti berkembang.
+    </p>
+  </div>
+</section>
+
+<section class="quote">
+  <p>"website yang hidup itu website yang masih terus diutak-atik."</p>
+</section>
+
+<section class="about-grid">
+  <div class="about-card big">
+    <span>currently...</span>
+    <h3>ngoding.<br>desain.<br>makan.<br>ulang lagi.</h3>
+  </div>
+
+  <div class="about-card">
+    <span>mood</span>
+    <h4>:)</h4>
+    <p>lumayan.<br>belum stres.<br>baru semester 7.</p>
+  </div>
+
+  <div class="about-card">
+    <span>playlist</span>
+    <h4>Maskhat 4rack</h4>
+    <p>kadang maskhat.<br>kadang j-pop.<br>kadang lagu yang diputer seminggu penuh.</p>
+  </div>
+
+  <div class="about-card wide">
+    <span>fun fact</span>
+    <p>
+      Sebagian besar waktu bukan dipakai buat nulis code.
+      Tapi... milih margin, geser padding 2 pixel,
+      terus dibalikin lagi.
+    </p>
+  </div>
+</section>
+
+<section class="editorial">
+  <div class="editorial-image">
+    <img src="assets/images/lawless-dragon.webp" alt="Lawless" width="1600" height="898" loading="lazy" decoding="async">
+  </div>
+
+  <div class="editorial-text">
+    <span>behind the screen</span>
+    <h2>aku suka website yang punya kepribadian.</h2>
+    <p>
+      Makanya halaman ini sengaja dibuat beda. Gak terlalu formal.
+      Gak terlalu rame. Semoga pas dibuka rasanya lebih kayak ngobrol
+      daripada baca dokumentasi.
+    </p>
+  </div>
+</section>
+
+<div class="space"></div>
+
+<section class="credits-wrap">
+  <div class="credits-title">
+    <span class="eyebrow">/ people behind this mess</span>
+    <h2>gak semuanya<br>aku kerjain<br>sendiri.</h2>
+  </div>
+
+  <div class="credit-list">
+    <div class="credit-row">
+      <div class="credit-no">01</div>
+      <div class="credit-main">
+        <h3>Lawless</h3>
+        <p>
+          UI Design • Front-end Development • Content Writing • Research •
+          Bug Fixing • Ngubah layout terus sampai puas.
+        </p>
+      </div>
+      <div class="credit-side">the one who refuses to use templates.</div>
+    </div>
+
+    <div class="credit-row">
+      <div class="credit-no">02</div>
+      <div class="credit-main">
+        <h3>Admin IRS</h3>
+        <p>
+          Membantu mengelola komunitas, mengumpulkan informasi, menjaga
+          kualitas data, serta memastikan website ini tetap berkembang
+          bersama komunitas.
+        </p>
+      </div>
+      <div class="credit-side">community admin.</div>
+    </div>
+
+    <div class="credit-row">
+      <div class="credit-no">03</div>
+      <div class="credit-main">
+        <h3>Indonesian Railfurs</h3>
+        <p>
+          Komunitas yang menjadi alasan website ini dibuat. Tempat semua
+          cerita, referensi, dan semangat itu dimulai.
+        </p>
+      </div>
+      <div class="credit-side">community.</div>
+    </div>
+  </div>
+</section>
+
+<section class="sources">
+  <div class="sources-left">
+    <span class="eyebrow">/ references</span>
+    <h2>semua data<br>gak datang<br>dari satu tempat.</h2>
+  </div>
+
+  <div class="sources-right">
+    <div class="source-item">
+      <span>WikiFur</span>
+      <p>Cross-check karakter, sejarah, serta berbagai istilah.</p>
+    </div>
+
+    <div class="source-item">
+      <span>Official Event Pages</span>
+      <p>Poster event, tanggal, dan pengumuman resmi.</p>
+    </div>
+
+    <div class="source-item">
+      <span>Community Archive</span>
+      <p>Dokumentasi komunitas, foto, arsip lama, dan berbagai referensi publik.</p>
+    </div>
+
+    <div class="source-item">
+      <span>Railfurs Members</span>
+      <p>
+        Kontributor, teman komunitas, serta berbagai masukan yang membantu
+        memperbaiki data.
+      </p>
+    </div>
+  </div>
+</section>
+
+<section class="ending">
+  <p class="ending-small">one last thing...</p>
+
+  <h2>
+    kalau nemu typo. atau data yang kurang. atau sekadar pengen ngobrol.
+    bilang aja. website ini masih terus berkembang.
+  </h2>
+
+  <a href="https://t.me/BlueLawless" target="_blank" class="ending-button">
+    say hello →
+  </a>
+</section>
+
+<footer>
+  <div class="footer-top">
+    <div>
+      <h3>Lawless</h3>
+      <p>
+        Designer. Developer. Masih sering redesign halaman yang sebenarnya
+        udah selesai. Kadang cuma karena padding 2 pixel terlihat "kurang pas".
+      </p>
+    </div>
+
+    <div>
+      <span>currently</span>
+      <h4>v4</h4>
+    </div>
+  </div>
+
+  <div class="footer-bottom">
+    <p>
+      Thanks for scrolling this far. Semoga website ini bisa jadi tempat yang
+      nyaman buat siapa pun yang penasaran tentang Indonesian Railfurs.
+      Terima kasih juga kepada
+      <a
+        href="https://anthro.id/"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="anthro-credit"
+        aria-label="Kunjungi anthro.id"
+      ><svg
+          viewBox="14.01 6.78 80.82 73.79"
+          fill="currentColor"
+          xmlns="http://www.w3.org/2000/svg"
+          aria-hidden="true"
+        >
+          <polyline points="40.797,31.038 59.307,33.707 62.652,6.778 47.928,14.657"/>
+          <path d="M16.497,34.623l8.602-19.695L41.17,6.778l-2.716,26.034l26.487,3.848l6.34,9.961l23.544,3.396l-1.132,6.338l-9.283,6.112l-26.714,5.429L43.208,80.572l-2.49-9.281l-14.941,5.887l-1.131-14.26l-10.64,2.714L16.497,34.623z M53.857,45.772l-12.748-1.403l6.375,6.784l5.555,0.585l2.76-2.457L53.857,45.772z"/>
+        </svg><strong>anthro.id</strong></a>
+      yang menjadi salah satu inspirasi dan referensi dalam membangun
+      website ini.
+    </p>
+
+    <p>crafted with too much coffee by Lawless.</p>
+  </div>
+</footer>
+</div>
+</body>
+</html>
