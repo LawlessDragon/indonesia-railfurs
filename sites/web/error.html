@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Error — Terjadi Kesalahan | Indonesian Railfurs</title>
+  <link rel="icon" type="image/png" href="https://i.ibb.co.com/RkTcW2bS/logo-bg-tp-kotak.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --black: #000;
+      --white: #fff;
+      --g100: #f7f7f7;
+      --g200: #e5e5e5;
+      --g400: #9ca3af;
+      --g600: #4b5563;
+      --red: #dc2626;
+      --accent: #e94560;
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      background-color: var(--white);
+    }
+
+    html, body {
+      font-family: 'Inter', sans-serif;
+      color: var(--black);
+      min-height: 100vh;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
+      background: var(--white);
+    }
+
+    .container {
+      max-width: 600px;
+      width: 100%;
+      text-align: center;
+    }
+
+    .error-icon {
+      width: 100px;
+      height: 100px;
+      border: 4px solid var(--black);
+      background: var(--g100);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 24px;
+      position: relative;
+    }
+
+    .error-icon::before {
+      content: '!';
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 48px;
+      font-weight: 700;
+      color: var(--red);
+    }
+
+    .error-icon::after {
+      content: '';
+      position: absolute;
+      inset: -8px;
+      border: 3px solid var(--red);
+      transform: rotate(3deg);
+      pointer-events: none;
+    }
+
+    .error-code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      background: var(--red);
+      color: var(--white);
+      padding: 6px 14px;
+      display: inline-block;
+      margin-bottom: 16px;
+    }
+
+    .error-title {
+      font-size: clamp(20px, 4vw, 28px);
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: -0.02em;
+      margin-bottom: 12px;
+    }
+
+    .error-desc {
+      font-size: 14px;
+      color: var(--g600);
+      line-height: 1.6;
+      margin-bottom: 32px;
+      max-width: 400px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .error-details {
+      background: var(--g100);
+      border: 2px solid var(--g200);
+      padding: 16px;
+      margin-bottom: 32px;
+      text-align: left;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--g600);
+    }
+
+    .error-details strong {
+      display: block;
+      font-size: 9px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--g400);
+      margin-bottom: 6px;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .actions {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      background: var(--black);
+      color: var(--white);
+      border: 3px solid var(--black);
+      padding: 14px 28px;
+      font-family: 'Inter', sans-serif;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+
+    .btn:hover {
+      background: var(--white);
+      color: var(--black);
+    }
+
+    .btn-secondary {
+      background: var(--white);
+      color: var(--black);
+      border-color: var(--g200);
+    }
+
+    .btn-secondary:hover {
+      border-color: var(--black);
+      background: var(--g100);
+    }
+
+    .logo {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      z-index: 10;
+    }
+
+    .logo img {
+      height: 28px;
+      opacity: 0.7;
+      transition: opacity 0.2s;
+    }
+
+    .logo:hover img {
+      opacity: 1;
+    }
+
+    .help-text {
+      font-size: 11px;
+      color: var(--g400);
+      margin-top: 16px;
+    }
+
+    .help-text a {
+      color: var(--black);
+      text-decoration: underline;
+    }
+
+    @media (max-width: 480px) {
+      body {
+        padding: 60px 16px 40px;
+      }
+
+      .error-icon {
+        width: 80px;
+        height: 80px;
+      }
+
+      .error-icon::before {
+        font-size: 36px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<a href="https://railfurs.my.id" class="logo">
+  <img src="https://i.ibb.co.com/VpzHz4sj/logo-bg-transparan.png" alt="IRS Logo">
+</a>
+
+<div class="container">
+  <div class="error-icon"></div>
+  
+  <span class="error-code" id="error-code">ERROR</span>
+  
+  <h1 class="error-title" id="error-title">Terjadi Kesalahan</h1>
+  <p class="error-desc" id="error-desc">Sistem mengalami gangguan teknis. Silakan coba beberapa saat lagi atau hubungi admin jika masalah berlanjut.</p>
+
+  <div class="error-details" id="error-details-box">
+    <strong>Kode Error</strong>
+    <span id="error-message">Unknown error occurred</span>
+  </div>
+
+  <div class="actions">
+    <button class="btn" onclick="window.location.reload()">
+      Coba Lagi
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M1 4v6h6"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/>
+      </svg>
+    </button>
+    <a href="https://railfurs.my.id" class="btn btn-secondary">
+      Kembali ke Beranda
+    </a>
+  </div>
+
+  <p class="help-text">
+    Butuh bantuan? Hubungi <a href="https://www.instagram.com/official_railfurs.id/" target="_blank">@official_railfurs.id</a>
+  </p>
+</div>
+
+<script>
+(function(){
+  var params = new URLSearchParams(window.location.search);
+  var code = params.get('code') || '500';
+  var msg = params.get('msg') || 'Terjadi kesalahan yang tidak diketahui';
+  var title = params.get('title') || 'Terjadi Kesalahan';
+  var desc = params.get('desc') || 'Sistem mengalami gangguan teknis. Silakan coba beberapa saat lagi.';
+
+  var errorMessages = {
+    '400': { title: 'Permintaan Tidak Valid', desc: 'Data yang dikirim tidak dapat diproses oleh sistem.' },
+    '401': { title: 'Tidak Terotorisasi', desc: 'Kamu perlu login terlebih dahulu untuk mengakses halaman ini.' },
+    '403': { title: 'Akses Ditolak', desc: 'Kamu tidak memiliki izin untuk mengakses halaman ini.' },
+    '404': { title: 'Halaman Tidak Ditemukan', desc: 'Halaman yang kamu cari tidak tersedia atau sudah dipindahkan.' },
+    '429': { title: 'Terlalu Banyak Permintaan', desc: 'Kamu melakukan terlalu banyak permintaan. Tunggu beberapa saat.' },
+    '500': { title: 'Kesalahan Server', desc: 'Server mengalami gangguan teknis. Tim kami sedang memperbaikinya.' },
+    '502': { title: 'Bad Gateway', desc: 'Server sementara tidak dapat diakses. Coba beberapa saat lagi.' },
+    '503': { title: 'Layanan Tidak Tersedia', desc: 'Sistem sedang dalam pemeliharaan. Silakan kembali nanti.' },
+    'timeout': { title: 'Waktu Habis', desc: 'Proses memakan waktu terlalu lama. Silakan coba lagi.' },
+    'network': { title: 'Gangguan Jaringan', desc: 'Tidak dapat terhubung ke server. Periksa koneksi internet kamu.' }
+  };
+
+  var errorInfo = errorMessages[code] || { title: title, desc: desc };
+
+  document.getElementById('error-code').textContent = code;
+  document.getElementById('error-title').textContent = errorInfo.title;
+  document.getElementById('error-desc').textContent = errorInfo.desc;
+  document.getElementById('error-message').textContent = msg;
+})();
+</script>
+
+</body>
+</html>
