@@ -1,4 +1,5 @@
 # Security Headers Configuration for Railfurs Web
+# NOTE: penting, jangan dihapus
 # Untuk digunakan di Cloudflare Pages/Workers atau web server lainnya
 
 /*
