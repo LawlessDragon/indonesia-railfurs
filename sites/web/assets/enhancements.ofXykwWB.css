@@ -1,4 +1,5 @@
 /* Layer tambahan: reveal gambar, peta (label + zoom + atribusi). */
+/* TODO: perlu dirapihin */
 
 /* Transisi antar halaman (Chrome 126+). Browser lain mengabaikan. */
 @view-transition { navigation: auto; }
