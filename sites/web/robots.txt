@@ -1,4 +1,5 @@
 User-agent: *
+# TODO: beresin nanti
 Allow: /
 
 Sitemap: https://railfurs.my.id/sitemap.xml
