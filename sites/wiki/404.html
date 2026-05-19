@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>404 — Halaman Tidak Ditemukan | Wiki Railfurs</title>
+  <link rel="icon" type="image/png" href="https://i.ibb.co.com/RkTcW2bS/logo-bg-tp-kotak.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { height: 100%; font-family: 'Inter', sans-serif; }
+    body { background: #f2f0ea; display: flex; align-items: center; justify-content: center; padding: 20px; }
+    .grid-bg { position: fixed; inset: 0; z-index: 0; pointer-events: none; background-image: radial-gradient(#00000010 1px, transparent 1px); background-size: 26px 26px; animation: gridMove 16s linear infinite; }
+    @keyframes gridMove { from { background-position: 0 0; } to { background-position: 0 260px; } }
+    .cover { position: relative; z-index: 1; max-width: 700px; width: 100%; background: #fff; border: 3px solid #111; box-shadow: 14px 14px 0 #111; }
+    .masthead { display: flex; justify-content: space-between; align-items: center; padding: 22px 28px; border-bottom: 3px solid #111; }
+    .mast-logo { font-size: 15px; font-weight: 900; letter-spacing: 0.02em; text-transform: uppercase; }
+    .vol-tag { font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700; letter-spacing: 0.1em; background: #111; color: #fff; padding: 5px 12px; }
+    .content { padding: 40px 28px; text-align: center; }
+    .error-code { font-family: 'JetBrains Mono', monospace; font-size: clamp(60px, 12vw, 100px); font-weight: 700; line-height: 1; color: #111; margin-bottom: 16px; }
+    .error-code span { color: transparent; -webkit-text-stroke: 2px #c85a1e; }
+    h1 { font-size: 20px; font-weight: 900; text-transform: uppercase; letter-spacing: -0.02em; margin-bottom: 12px; }
+    p { font-size: 14px; color: #666; line-height: 1.6; margin-bottom: 24px; }
+    .suggestions { border-top: 2px dashed #ddd; padding-top: 24px; margin-top: 24px; text-align: left; }
+    .suggestions-title { font-family: 'JetBrains Mono', monospace; font-size: 9px; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: #999; margin-bottom: 16px; display: block; }
+    .suggestion-list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+    .suggestion-item { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border: 2px solid #111; background: #fff; text-decoration: none; color: #111; transition: all 0.2s; }
+    .suggestion-item:hover { background: #f2f0ea; padding-left: 18px; }
+    .suggestion-item .arrow { font-size: 14px; }
+    .suggestion-item .label { font-size: 12px; font-weight: 700; text-transform: uppercase; }
+    .suggestion-item .desc { font-size: 11px; color: #666; }
+    .redirect-notice { margin-top: 24px; font-size: 11px; color: #999; }
+    .redirect-notice strong { color: #111; }
+    @media (max-width: 480px) { .masthead { padding: 14px 16px; } .content { padding: 24px 16px; } .cover { box-shadow: 6px 6px 0 #111; } }
+  </style>
+</head>
+<body>
+  <div class="grid-bg"></div>
+  <div class="cover">
+    <div class="masthead">
+      <span class="mast-logo">RAILFURS WIKI</span>
+      <span class="vol-tag">404</span>
+    </div>
+    <div class="content">
+      <div class="error-code">4<span>0</span>4</div>
+      <h1>Artikel Tidak Ditemukan</h1>
+      <p>Halaman wiki yang kamu cari belum tersedia atau sudah dipindahkan. Coba akses artikel lainnya.</p>
+      <div class="suggestions">
+        <span class="suggestions-title">Artikel Tersedia</span>
+        <ul class="suggestion-list">
+          <li><a href="/index.html" class="suggestion-item"><span class="arrow">→</span><div><div class="label">Beranda Wiki</div><div class="desc">Kembali ke halaman utama wiki</div></div></a></li>
+          <li><a href="apa-itu-furry.html" class="suggestion-item"><span class="arrow">→</span><div><div class="label">Apa itu Furry?</div><div class="desc">Pelajari tentang fandom furry</div></div></a></li>
+          <li><a href="event-furry-indonesia.html" class="suggestion-item"><span class="arrow">→</span><div><div class="label">Event Furry</div><div class="desc">Daftar event furry Indonesia</div></div></a></li>
+        </ul>
+      </div>
+      <p class="redirect-notice">Auto-redirect ke beranda dalam <strong id="countdown">10</strong> detik...</p>
+    </div>
+  </div>
+  <script>
+    var c = 10;
+    setInterval(function(){
+      c--;
+      document.getElementById('countdown').textContent = c;
+      if (c <= 0) window.location.href = '/index.html';
+    }, 1000);
+  </script>
+</body>
+</html>
