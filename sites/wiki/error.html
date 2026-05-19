@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Error — Wiki Railfurs</title>
+  <link rel="icon" type="image/png" href="https://i.ibb.co.com/RkTcW2bS/logo-bg-tp-kotak.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { height: 100%; font-family: 'Inter', sans-serif; }
+    body { background: #f2f0ea; display: flex; align-items: center; justify-content: center; padding: 20px; }
+    .cover { max-width: 600px; width: 100%; background: #fff; border: 3px solid #111; box-shadow: 14px 14px 0 #111; padding: 40px; text-align: center; }
+    .error-icon { width: 80px; height: 80px; border: 3px solid #111; background: #f2f0ea; display: flex; align-items: center; justify-content: center; margin: 0 auto 24px; position: relative; }
+    .error-icon::before { content: '!'; font-family: 'JetBrains Mono', monospace; font-size: 40px; font-weight: 700; color: #c85a1e; }
+    .error-code { font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; background: #c85a1e; color: #fff; padding: 6px 14px; display: inline-block; margin-bottom: 16px; }
+    h1 { font-size: 24px; font-weight: 900; text-transform: uppercase; letter-spacing: -0.02em; margin-bottom: 12px; }
+    p { font-size: 14px; color: #666; line-height: 1.6; margin-bottom: 24px; }
+    .error-details { background: #f2f0ea; border: 2px solid #ddd; padding: 16px; margin-bottom: 24px; text-align: left; font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #666; }
+    .error-details strong { display: block; font-size: 9px; text-transform: uppercase; letter-spacing: 0.1em; color: #999; margin-bottom: 6px; font-family: 'Inter', sans-serif; }
+    .actions { display: flex; flex-direction: column; gap: 10px; }
+    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; background: #111; color: #fff; border: 3px solid #111; padding: 14px 24px; font-size: 12px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; text-decoration: none; transition: all 0.2s; cursor: pointer; }
+    .btn:hover { background: #fff; color: #111; }
+    .btn-secondary { background: #fff; color: #111; border-color: #ddd; }
+    .btn-secondary:hover { border-color: #111; background: #f2f0ea; }
+    @media (max-width: 480px) { .cover { padding: 24px; box-shadow: 6px 6px 0 #111; } }
+  </style>
+</head>
+<body>
+  <div class="cover">
+    <div class="error-icon"></div>
+    <span class="error-code" id="error-code">ERROR</span>
+    <h1 id="error-title">Terjadi Kesalahan</h1>
+    <p id="error-desc">Wiki mengalami gangguan teknis. Silakan coba lagi.</p>
+    <div class="error-details">
+      <strong>Kode Error</strong>
+      <span id="error-message">Unknown error</span>
+    </div>
+    <div class="actions">
+      <button class="btn" onclick="window.location.reload()">Coba Lagi</button>
+      <a href="/index.html" class="btn btn-secondary">Kembali ke Wiki</a>
+    </div>
+  </div>
+  <script>
+    (function(){
+      var params = new URLSearchParams(window.location.search);
+      var code = params.get('code') || '500';
+      var msg = params.get('msg') || 'Terjadi kesalahan';
+      var errors = {
+        '400': { title: 'Permintaan Tidak Valid', desc: 'Data tidak dapat diproses.' },
+        '401': { title: 'Tidak Terotorisasi', desc: 'Akses ditolak.' },
+        '403': { title: 'Akses Ditolak', desc: 'Kamu tidak memiliki akses.' },
+        '404': { title: 'Tidak Ditemukan', desc: 'Halaman wiki tidak tersedia.' },
+        '500': { title: 'Kesalahan Server', desc: 'Server mengalami gangguan.' }
+      };
+      var e = errors[code] || { title: 'Terjadi Kesalahan', desc: 'Wiki mengalami gangguan.' };
+      document.getElementById('error-code').textContent = code;
+      document.getElementById('error-title').textContent = e.title;
+      document.getElementById('error-desc').textContent = e.desc;
+      document.getElementById('error-message').textContent = msg;
+    })();
+  </script>
+</body>
+</html>
