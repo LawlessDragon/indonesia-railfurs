@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Error — Join IRS</title>
+  <link rel="icon" type="image/png" href="https://i.ibb.co.com/RkTcW2bS/logo-bg-tp-kotak.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { font-family: 'Inter', sans-serif; min-height: 100vh; color: #000; }
+    body { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 20px; background: #fff; }
+    .container { max-width: 500px; width: 100%; text-align: center; }
+    .error-icon { width: 80px; height: 80px; border: 4px solid #000; background: #f7f7f7; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; position: relative; }
+    .error-icon::before { content: '!'; font-family: 'JetBrains Mono', monospace; font-size: 40px; font-weight: 700; color: #dc2626; }
+    .error-icon::after { content: ''; position: absolute; inset: -8px; border: 3px solid #dc2626; transform: rotate(3deg); }
+    .error-code { font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; background: #dc2626; color: #fff; padding: 6px 14px; display: inline-block; margin-bottom: 16px; }
+    .error-title { font-size: 22px; font-weight: 900; text-transform: uppercase; letter-spacing: -0.02em; margin-bottom: 12px; }
+    .error-desc { font-size: 14px; color: #666; line-height: 1.6; margin-bottom: 24px; }
+    .error-details { background: #f7f7f7; border: 2px solid #e5e5e5; padding: 16px; margin-bottom: 24px; text-align: left; font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #666; }
+    .error-details strong { display: block; font-size: 9px; text-transform: uppercase; letter-spacing: 0.1em; color: #999; margin-bottom: 6px; font-family: 'Inter', sans-serif; }
+    .actions { display: flex; flex-direction: column; gap: 10px; }
+    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; background: #000; color: #fff; border: 3px solid #000; padding: 14px 24px; font-size: 12px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; text-decoration: none; transition: all 0.2s; cursor: pointer; }
+    .btn:hover { background: #fff; color: #000; }
+    .btn-secondary { background: #fff; color: #000; border-color: #e5e5e5; }
+    .btn-secondary:hover { border-color: #000; }
+    .logo { position: fixed; top: 20px; left: 20px; }
+    .logo img { height: 28px; opacity: 0.7; }
+  </style>
+</head>
+<body>
+  <a href="https://railfurs.my.id" class="logo"><img src="https://i.ibb.co.com/VpzHz4sj/logo-bg-transparan.png" alt="IRS"></a>
+  <div class="container">
+    <div class="error-icon"></div>
+    <span class="error-code" id="error-code">ERROR</span>
+    <h1 class="error-title" id="error-title">Terjadi Kesalahan</h1>
+    <p class="error-desc" id="error-desc">Sistem pendaftaran mengalami gangguan. Silakan coba lagi.</p>
+    <div class="error-details">
+      <strong>Kode Error</strong>
+      <span id="error-message">Unknown error</span>
+    </div>
+    <div class="actions">
+      <button class="btn" onclick="window.location.reload()">Coba Lagi</button>
+      <a href="/index.html" class="btn btn-secondary">Kembali ke Pendaftaran</a>
+    </div>
+  </div>
+  <script>
+    (function(){
+      var params = new URLSearchParams(window.location.search);
+      var code = params.get('code') || '500';
+      var msg = params.get('msg') || 'Terjadi kesalahan';
+      var title = params.get('title') || 'Terjadi Kesalahan';
+      var desc = params.get('desc') || 'Sistem pendaftaran mengalami gangguan.';
+      var errors = {
+        '400': { title: 'Permintaan Tidak Valid', desc: 'Data tidak dapat diproses.' },
+        '401': { title: 'Tidak Terotorisasi', desc: 'Login ulang untuk melanjutkan.' },
+        '403': { title: 'Akses Ditolak', desc: 'Kamu tidak memiliki akses.' },
+        '404': { title: 'Tidak Ditemukan', desc: 'Halaman tidak tersedia.' },
+        '429': { title: 'Terlalu Banyak Permintaan', desc: 'Tunggu beberapa saat.' },
+        '500': { title: 'Kesalahan Server', desc: 'Server mengalami gangguan.' },
+        'timeout': { title: 'Waktu Habis', desc: 'Proses memakan waktu terlalu lama.' }
+      };
+      var e = errors[code] || { title: title, desc: desc };
+      document.getElementById('error-code').textContent = code;
+      document.getElementById('error-title').textContent = e.title;
+      document.getElementById('error-desc').textContent = e.desc;
+      document.getElementById('error-message').textContent = msg;
+    })();
+  </script>
+</body>
+</html>
