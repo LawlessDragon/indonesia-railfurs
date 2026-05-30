@@ -1,0 +1,2497 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Single Sign On - Indonesian Railfurs</title>
+
+<!-- Tailwind CSS (browser build) -->
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+
+<!-- Google Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700;800&display=swap" rel="stylesheet">
+
+<style>
+  /* ============================================================
+     DESIGN TOKENS
+     Aksen tunggal oranye + skala TINT (10-20% saturasi).
+     Aturan: warna muncul sebagai tint, bukan blok jenuh.
+     ============================================================ */
+  :root {
+    --bg-page:     #f6f7f9;
+    --surface:     #ffffff;
+    --border:      #e5e7eb;
+    --border-soft: #eef0f2;
+
+    --accent:      #f36c21;
+    --accent-soft: #fff4ec;
+
+    --text:        #0f172a;
+    --text-muted:  #64748b;
+    --text-soft:   #475569;
+
+    --ok:          #047857;
+    --danger:      #e11d48;
+
+    /* Tint untuk ikon baris profil + badge
+       FG chosen so every pair clears WCAG AA 4.5:1 (see audit) */
+    --tint-sky:   #e0f2fe;  --tint-sky-fg:   #0369a1;
+    --tint-mint:  #d7f5ea;  --tint-mint-fg:  #047857;
+    --tint-amber: #fef3c7;  --tint-amber-fg: #b45309;
+    --tint-rose:  #ffe4e6;  --tint-rose-fg:  #be123c;
+    --tint-green: #dcfce7;  --tint-green-fg: #047857;
+
+    /* Gradien lembut untuk header kartu */
+    --grad-member: linear-gradient(135deg, #a7e8d4 0%, #6fd7c0 100%);
+    --grad-ticket: linear-gradient(135deg, #a5d8f7 0%, #74bdf0 100%);
+    --grad-join:   linear-gradient(135deg, #fed7aa 0%, #fdba74 100%);
+    --grad-warm:   linear-gradient(135deg, #fff6ed 0%, #ffe7d2 100%);
+
+    --ico-bg:      #f1f3f5;
+    --ico-fg:      #64748b;
+  }
+
+  body { font-family: 'Plus Jakarta Sans', sans-serif; }
+  .font-mono { font-family: 'JetBrains Mono', monospace; }
+  ::selection { background: var(--accent); color: #fff; }
+
+  /* ============================================================
+     VIEW SWITCH
+     ============================================================ */
+  .view { display: none; }
+  .view.is-active { display: flex; }
+
+  /* --- Entrance stagger --- */
+  
+
+  /* --- Angka statistik naik saat load --- */
+  
+
+  /* --- Silhouette karakter di banner --- */
+  
+  .a-char {  transform-origin: 70% 80%; }
+
+  /* --- ORNAMEN PERON FULL-WIDTH (banner) ---
+     Rel & bantalan sengaja DIAM. Yang bergerak hanya hal-hal kecil
+     supaya tidak mengganggu baca konten. */
+
+  /* Ornamen detail disembunyikan di layar kecil agar tidak jadi butiran */
+  @media (max-width: 639px) { .rs-minor { display: none; } }
+
+  /* Jam peron: tiga jarum digerakkan JS lewat SVG transform attribute
+   (lihat paintClock). Tidak pakai CSS transform supaya tidak bergantung
+   pada dukungan transform-box yang berbeda-beda antar browser. */
+
+  /* Papan nama goyang pelan seperti angin */
+  
+  .rs-sign { transform-box: fill-box; transform-origin: 50% 0;  }
+
+  /* Lampu gantung: filamen denyut + cone cahaya ikut mengembang */
+  
+  .rs-lamp-glow { fill: #fbbf24;  }
+
+  /* --- Ikon baris profil: warna keluarga lewat TINT, bukan blok jenuh --- */
+  
+  .ico {
+    background: var(--ico-bg);
+    color: var(--ico-fg);
+    transition: background-color .3s ease, color .3s ease;
+  }
+  .ico.t-sky   { background: var(--tint-sky);   color: var(--tint-sky-fg); }
+  .ico.t-mint  { background: var(--tint-mint);  color: var(--tint-mint-fg); }
+  .ico.t-amber { background: var(--tint-amber); color: var(--tint-amber-fg); }
+  .ico.t-rose  { background: var(--tint-rose);  color: var(--tint-rose-fg); }
+  .ico.t-green { background: var(--tint-green); color: var(--tint-green-fg); }
+
+  .row:hover .ico {  filter: saturate(1.35) brightness(.97); }
+
+  /* Tombol aksi profil: tint -> solid saat hover */
+  .ico-btn { transition: filter .25s ease, transform .25s ease, box-shadow .25s ease; }
+  .ico-btn:hover { filter: saturate(1.4); box-shadow: 0 6px 16px rgba(15,23,42,.08); }
+
+  /* --- Panah kartu: netral jadi aksen --- */
+  
+  .card-arrow {
+    background: var(--ico-bg);
+    color: var(--text-muted);
+    transition: background-color .3s ease, color .3s ease;
+  }
+  .card:hover .card-arrow { background: var(--accent); color: #fff;  }
+
+  /* --- "Untuk siapa": satu baris di blok teks tiap kartu ---
+     Sengaja kalem (abu-abu, huruf kecil): tugasnya menjelaskan, bukan
+     menarik perhatian dari judul kartu. Diletakkan di bawah deskripsi
+     yang sudah ada supaya tidak ada satu pun elemen yang bergeser. */
+  .card-untuk {
+    font-size: 10px;
+    line-height: 1.45;
+    color: var(--text-muted);
+    margin-top: 6px;
+    letter-spacing: .01em;
+  }
+
+  /* --- Strip "biodata sudah terisi, belum jadi anggota" ---
+     Amber, bukan merah: ini bukan kesalahan, ini setengah jalan. Warna
+     Amber sengaja sama dengan aksen JOIN supaya terbaca sebagai
+     "lanjutkan ke kartu sebelah". Elemennya .hidden sampai JS
+     memutuskan, jadi tidak ada kedipan untuk yang tidak berkepentingan. */
+  .strip-belum-anggota {
+    margin-top: 10px;
+    padding: 10px 12px;
+    text-align: left;
+    background: var(--tint-amber);
+    border-left: 3px solid #f59e0b;
+    border-radius: 0 8px 8px 0;
+  }
+  .strip-belum-anggota.hidden { display: none; }
+  .strip-belum-anggota .sb-judul {
+    font-size: 11px;
+    font-weight: 800;
+    color: var(--tint-amber-fg);
+    line-height: 1.3;
+  }
+  .strip-belum-anggota .sb-ket {
+    font-size: 10px;
+    color: var(--tint-amber-fg);
+    opacity: .85;
+    line-height: 1.45;
+    margin-top: 3px;
+  }
+  .strip-belum-anggota .sb-aksi {
+    margin-top: 8px;
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    color: var(--tint-amber-fg);
+    background: rgba(255, 255, 255, .6);
+    border: 1px solid rgba(245, 158, 11, .35);
+    border-radius: 6px;
+    padding: 6px 10px;
+    cursor: pointer;
+    width: 100%;
+    transition: background-color .2s ease;
+  }
+  .strip-belum-anggota .sb-aksi:hover { background: #fff; }
+
+  /* --- Panel kotak SSO: denyut|border halus saat hover --- */
+  
+  .sso-panel { transition: box-shadow .45s ease, border-color .45s ease; }
+
+  /* --- Badge jumlah layanan --- */
+  
+
+  /* --- Garis aksen bawah judul panel --- */
+  
+  .accent-bar { transform-origin: left;  }
+
+  /* Screen switch (welcome <-> form) */
+  .screen { display: none; }
+  .screen.is-active { display: block; }
+
+  /* Scrollbar hide */
+  html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
+  html, body { -ms-overflow-style: none; scrollbar-width: none; }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {   transition-duration: .001ms !important; }
+  }
+  img:not([src]) { display: none; }
+/* ============================================================
+   ANIMASI: PAPAN JADWAL (SPLIT-FLAP) - 4 GERAK
+
+   Tiap layar punya pasangan muncul + hilang sendiri. Total 4:
+
+     welcome muncul   irsWelcomeMasuk    flip-turun + unblur + fade
+     welcome hilang    irsWelcomeKeluar   flip-naik + blur + fade
+     form muncul      irsFormMasuk       flip-naik + unblur + fade
+     form hilang      irsFormKeluar      flip-turun + blur + fade
+
+   Seperti papan jadwal keberangkatan di stasiun: flap berputar pada
+   porosnya, bukan teks yang digeser. Tidak ada translate, tidak ada
+   clip-path, tidak ada scale pada konten - posisi teks tidak pernah
+   pindah, yang berubah hanya sudut + ketajaman + opacity.
+
+   Stagger hilang = kebalikan stagger muncul (4 3 2 1). Dijaga checker.
+
+   Dua fase bergiliran (diatur setLayar di builder, bukan di sini):
+   fase 1 layar lama habis dulu, fase 2 layar baru muncul. Tidak timpa.
+
+   BENTUK BERKAS: delay ditulis eksplisit per blok. Tepat 4 @keyframes.
+   ============================================================ */
+
+/* --- Welcome muncul: flap jatuh ke tempat ----------------------------- */
+
+@keyframes irsWelcomeMasuk {
+  from { transform: perspective(900px) rotateX(-60deg); opacity: 0; filter: blur(8px); }
+  to   { transform: perspective(900px) rotateX(0);      opacity: 1; filter: blur(0); }
+}
+
+/* --- Welcome hilang: flap terangkat pergi (kebalikan stagger) ---------- */
+
+@keyframes irsWelcomeKeluar {
+  from { transform: perspective(900px) rotateX(0);     opacity: 1; filter: blur(0); }
+  to   { transform: perspective(900px) rotateX(60deg); opacity: 0; filter: blur(8px); }
+}
+
+/* --- Form muncul: cerminan welcome (poros berlawanan) ------------------ */
+
+@keyframes irsFormMasuk {
+  from { transform: perspective(900px) rotateX(60deg); opacity: 0; filter: blur(8px); }
+  to   { transform: perspective(900px) rotateX(0);     opacity: 1; filter: blur(0); }
+}
+
+/* --- Form hilang: cerminan keluarnya welcome --------------------------- */
+
+@keyframes irsFormKeluar {
+  from { transform: perspective(900px) rotateX(0);      opacity: 1; filter: blur(0); }
+  to   { transform: perspective(900px) rotateX(-60deg); opacity: 0; filter: blur(8px); }
+}
+
+/* --- Layar keluar: lepas dari layout, tapi TIDAK fade sendiri -----------
+   Yang bergerak hanya blok-blok di dalamnya. Kalau container ikut
+   memudar, isinya hilang sebelum urutannya selesai. position:absolute
+   karena clip sudah tidak dipakai: tanpa ini layar keluar tetap memakan
+   tinggi dan mendorong layar baru. */
+
+.screen.is-leaving {
+  display: block;
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  pointer-events: none;
+}
+.screen-host { position: relative; }
+
+/* --- Welcome muncul: stagger 0/90/180 ----------------------------------- */
+
+#screen-welcome.is-active .space-y-3 {
+  animation: irsWelcomeMasuk 500ms cubic-bezier(.22, 1, .36, 1) both;
+  animation-delay: 0ms;
+}
+#screen-welcome.is-active > p {
+  animation: irsWelcomeMasuk 500ms cubic-bezier(.22, 1, .36, 1) both;
+  animation-delay: 90ms;
+}
+#screen-welcome.is-active .pt-2 {
+  animation: irsWelcomeMasuk 500ms cubic-bezier(.22, 1, .36, 1) both;
+  animation-delay: 180ms;
+}
+
+/* --- Welcome hilang: stagger DIBALIK 180/90/0 --------------------------- */
+
+#screen-welcome.is-leaving .space-y-3 {
+  animation: irsWelcomeKeluar 400ms cubic-bezier(.4, 0, .2, 1) both;
+  animation-delay: 180ms;
+}
+#screen-welcome.is-leaving > p {
+  animation: irsWelcomeKeluar 400ms cubic-bezier(.4, 0, .2, 1) both;
+  animation-delay: 90ms;
+}
+#screen-welcome.is-leaving .pt-2 {
+  animation: irsWelcomeKeluar 400ms cubic-bezier(.4, 0, .2, 1) both;
+  animation-delay: 0ms;
+}
+
+/* --- Form muncul: stagger 0/80/160/240 ---------------------------------- */
+
+#screen-form.is-active > div:nth-child(1) {
+  animation: irsFormMasuk 500ms cubic-bezier(.22, 1, .36, 1) both;
+  animation-delay: 0ms;
+}
+#screen-form.is-active > div:nth-child(2) {
+  animation: irsFormMasuk 500ms cubic-bezier(.22, 1, .36, 1) both;
+  animation-delay: 80ms;
+}
+#screen-form.is-active > div:nth-child(3) {
+  animation: irsFormMasuk 500ms cubic-bezier(.22, 1, .36, 1) both;
+  animation-delay: 160ms;
+}
+#screen-form.is-active > div:nth-child(4) {
+  animation: irsFormMasuk 500ms cubic-bezier(.22, 1, .36, 1) both;
+  animation-delay: 240ms;
+}
+
+/* --- Form hilang: stagger DIBALIK 240/160/80/0 -------------------------- */
+
+#screen-form.is-leaving > div:nth-child(1) {
+  animation: irsFormKeluar 400ms cubic-bezier(.4, 0, .2, 1) both;
+  animation-delay: 240ms;
+}
+#screen-form.is-leaving > div:nth-child(2) {
+  animation: irsFormKeluar 400ms cubic-bezier(.4, 0, .2, 1) both;
+  animation-delay: 160ms;
+}
+#screen-form.is-leaving > div:nth-child(3) {
+  animation: irsFormKeluar 400ms cubic-bezier(.4, 0, .2, 1) both;
+  animation-delay: 80ms;
+}
+#screen-form.is-leaving > div:nth-child(4) {
+  animation: irsFormKeluar 400ms cubic-bezier(.4, 0, .2, 1) both;
+  animation-delay: 0ms;
+}
+
+/* --- Tampilan statis (bukan animasi) ----------------------------------- */
+
+/* Tombol MASUK: oranye brand #f36c21 (--accent halaman). */
+.btn-masuk {
+  background-color: #7c2d12;
+  background-image: linear-gradient(90deg, #fb923c 0%, #f36c21 55%, #d9540f 100%);
+  background-repeat: no-repeat;
+}
+.btn-masuk:hover {
+  background-image: linear-gradient(90deg, #fdba74 0%, #fb923c 55%, #ea580c 100%);
+}
+
+/* Tombol OAuth: warna dasar digelapkan supaya terlihat berisi. */
+#btn-discord {
+  background-color: #353a99;
+  background-image: linear-gradient(90deg, #5865F2 0%, #4752c4 100%);
+  background-repeat: no-repeat;
+}
+#btn-discord:hover {
+  background-image: linear-gradient(90deg, #6f7af5 0%, #5865F2 100%);
+}
+#btn-google {
+  background-color: #2a2a2a;
+  background-image: linear-gradient(90deg, #ffffff 0%, #d4d4d4 100%);
+  background-repeat: no-repeat;
+}
+#btn-google:hover {
+  background-image: linear-gradient(90deg, #ffffff 0%, #e5e5e5 100%);
+}
+
+/* Input: border statis redup. Kedua input disabled - border terang
+   membuatnya terlihat bisa diisi. */
+#screen-form input {
+  border: 1px solid rgba(255, 255, 255, .12);
+}
+
+/* Tutup area yang mati: arsir diagonal di atas seluruh blok input.
+   Bahasa visual baku untuk "tidak bisa diisi", tanpa kalimat. */
+#screen-form > div:nth-child(3) {
+  position: relative;
+}
+#screen-form > div:nth-child(3)::after {
+  content: '';
+  position: absolute;
+  inset: -6px -8px;
+  border-radius: 10px;
+  background:
+    repeating-linear-gradient(45deg,
+      rgba(255, 255, 255, .055) 0 6px,
+      rgba(255, 255, 255, 0)   6px 14px),
+    rgba(255, 255, 255, .012);
+  pointer-events: none;
+}
+#screen-form > div:nth-child(3) label {
+  color: rgba(255, 255, 255, .34);
+}
+#screen-form > div:nth-child(3) input {
+  color: rgba(255, 255, 255, .3);
+}
+
+/* Pembatas: garis statis 1px. */
+#screen-form > div:nth-child(4) {
+  position: relative;
+  border-top-color: transparent;
+}
+#screen-form > div:nth-child(4)::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: rgba(255, 255, 255, .16);
+}
+
+/* --- Running text pengumuman (PENGECUALIAN ATAS ATURAN NO-INFINITE) ----
+   Aturan proyek melarang gerak abadi. Satu-satunya pengecualian adalah
+   marquee ini, karena DIMINTA EKSPLISIT oleh pemilik ("pengumuman itu
+   running text bukan diem begitu", lalu "jalan terus, jangan berhenti
+   saat kursor di atas"). Scope-nya hanya #info-track, durasi
+   28 detik (lambat, tidak mengganggu), TIDAK berhenti saat hover, dan mati
+   total di prefers-reduced-motion. Kalau pengecualian ini dicabut,
+   hapus juga isi tab `Informasi` (tidak ada yang membacanya lagi). */
+@keyframes ssoMarquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+.info-track {
+  display: inline-flex;
+  white-space: nowrap;
+  will-change: transform;
+  animation: ssoMarquee 28s linear infinite;
+}
+
+/* --- Hormati preferensi sistem ---------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .info-track { animation: none; }
+  .screen.is-active *,
+  .screen.is-leaving *,
+  .screen.is-leaving {
+    animation: none !important;
+  }
+  .screen.is-leaving { display: none !important; }
+}
+
+/* ============================================================
+   DASBOR: HEADER & STRIP IDENTITAS
+   ============================================================ */
+
+.dash-head {
+  background: linear-gradient(135deg, #0a0e17 0%, #10151d 100%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+.dash-head .sub-oranye {
+  color: #fdba74;
+}
+
+/* ============================================================
+   MODAL EDIT BIODATA: CAP PERON + TUTUP
+   ============================================================
+   Sistem BARU pengganti tirai sukses layar-penuh (dihapus total:
+   overlay, denyut opacity, getar translateX, spinner putar).
+   Alurnya satu kesatuan di dalam kartu modal:
+
+     kirim -> garis rel berjalan di badan tombol (is-kirim)
+     cap   -> stempel hijau menancap di sudut kartu (is-cap + #bio-cap)
+     tutup -> kartu meluruh seperti karcis ditarik (.modal-tutup)
+     tolak -> sentakan miring singkat + toast (is-tolak)
+
+   Hanya SATU infinite (garis kirim, berhenti saat respons tiba).
+   Badge disembunyikan dengan .hidden (display:none), BUKAN opacity:0 -
+   aturan proyek melarang opacity 0 di luar keyframes.
+   ============================================================ */
+
+#btn-simpan-bio {
+  background: var(--accent);
+  color: #ffffff;
+  font-weight: 700;
+  border-radius: 0.75rem;
+  box-shadow: 0 2px 8px -2px rgba(243, 108, 33, .4), inset 0 1px 0 rgba(255, 255, 255, .2);
+  transition: background-color 220ms cubic-bezier(.16, 1, .3, 1),
+              box-shadow 220ms cubic-bezier(.16, 1, .3, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+#btn-simpan-bio:hover:not(.is-kirim):not(.is-cap):not(.is-tolak) {
+  background: #e05a12;
+  box-shadow: 0 6px 18px -4px rgba(243, 108, 33, .55), inset 0 1px 0 rgba(255, 255, 255, .25);
+}
+
+#btn-simpan-bio:active:not(.is-kirim):not(.is-cap):not(.is-tolak) {
+  background: #cf4f0c;
+  box-shadow: 0 2px 4px rgba(243, 108, 33, .3);
+}
+
+/* State: MENGIRIM - garis rel berjalan */
+#btn-simpan-bio.is-kirim {
+  cursor: wait;
+  background-color: #d95b16;
+  background-image: repeating-linear-gradient(45deg, rgba(255, 255, 255, .16) 0 10px, transparent 10px 20px);
+  box-shadow: 0 2px 8px rgba(217, 91, 22, .35);
+  animation: bioKirimGaris 900ms linear infinite;
+}
+
+/* State: TERCAP - hijau terkunci */
+#btn-simpan-bio.is-cap {
+  background: #15803d !important;
+  box-shadow: 0 6px 18px -4px rgba(21, 128, 61, .55), inset 0 1px 0 rgba(255, 255, 255, .2) !important;
+}
+
+/* State: DITOLAK - merah + sentakan miring */
+#btn-simpan-bio.is-tolak {
+  background: #be123c !important;
+  box-shadow: 0 6px 18px -4px rgba(190, 18, 60, .55) !important;
+  animation: bioTolakSentak 320ms cubic-bezier(.36, .07, .19, .97) both;
+}
+
+/* Cap menancap di sudut kartu */
+#bio-cap.cap-masuk {
+  animation: bioCapMasuk 380ms cubic-bezier(.16, 1, .3, 1) both;
+}
+#bio-cap.cap-masuk #bio-cap-centang {
+  stroke-dasharray: 26;
+  stroke-dashoffset: 26;
+  animation: bioCentang 380ms ease-out 100ms forwards;
+}
+
+/* Keluar: karcis ditarik */
+#edit-modal.modal-tutup {
+  animation: bioTutup 240ms cubic-bezier(.4, 0, 1, 1) forwards;
+  pointer-events: none;
+}
+#edit-modal.modal-tutup #edit-card {
+  animation: bioTutup 240ms cubic-bezier(.4, 0, 1, 1) forwards;
+}
+
+@keyframes bioKirimGaris {
+  from { background-position: 0 0; }
+  to   { background-position: 28px 0; }
+}
+
+@keyframes bioCapMasuk {
+  from { opacity: 0; transform: scale(1.5) rotate(-14deg); }
+  to   { opacity: 1; transform: scale(1) rotate(-12deg); }
+}
+
+@keyframes bioCentang {
+  from { stroke-dashoffset: 26; }
+  to   { stroke-dashoffset: 0; }
+}
+
+@keyframes bioTutup {
+  from { opacity: 1; transform: scale(1) translateY(0); }
+  to   { opacity: 0; transform: scale(.97) translateY(10px); }
+}
+
+@keyframes bioTolakSentak {
+  0%, 100% { transform: translateX(0) rotate(0); }
+  30%      { transform: translateX(-3px) rotate(-.6deg); }
+  70%      { transform: translateX(3px) rotate(.6deg); }
+}
+
+/* Gerak dikurangi: status tetap terbaca dari warna dan teksnya. */
+@media (prefers-reduced-motion: reduce) {
+  #btn-simpan-bio.is-kirim,
+  #btn-simpan-bio.is-tolak,
+  #bio-cap.cap-masuk,
+  #bio-cap.cap-masuk #bio-cap-centang,
+  #edit-modal.modal-tutup,
+  #edit-modal.modal-tutup #edit-card { animation: none !important; }
+}
+
+/* ============================================================
+   TIRAI BOOT: ROL PERON
+   ============================================================
+   view-login membawa is-active di markup supaya halaman tetap
+   terpakai tanpa JavaScript. Akibatnya, sebelum /sesi menjawab,
+   pengunjung yang SUDAH login sempat melihat form login (satu
+   frame) sebelum dashboard menggantikannya.
+
+   Tirai ini menutup layar sampai sesi (dan profil) siap, jadi view
+   yang muncul pertama kali selalu view yang benar.
+
+   Sistem BARU pengganti memudar+zoom+logo-bernapas (dihapus total):
+   tirai TERANGKAT ke atas seperti rol peron yang dibuka
+   (bootAngkat, 560ms, sekali jalan), dengan garis cahaya rel di
+   tepi bawahnya yang ikut terangkat. Selama memuat, tiga lampu rel
+   menyala bergiliran (bootTitik) - ritme khas peron, bukan spinner
+   generik. Logo diam: yang bergerak rel dan tirainya.
+
+   Tanpa JavaScript tirai tidak akan terbuka sendiri, karena itu
+   <noscript> di markup menampilkan tombol pelepas. */
+
+#boot {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #0a0b0e;
+  will-change: transform;
+}
+#boot::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+}
+#boot .boot-isi {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+#boot .boot-isi img {
+  width: 136px;
+  height: auto;
+  opacity: .92;
+}
+
+/* Lampu rel: tiga titik menyala bergiliran selama memuat. */
+#boot .boot-rel {
+  display: flex;
+  gap: 10px;
+  margin-top: 18px;
+}
+#boot .boot-rel span {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #3f3f46;
+  animation: bootTitik 1.2s ease-in-out infinite;
+}
+#boot .boot-rel span:nth-child(2) { animation-delay: .24s; }
+#boot .boot-rel span:nth-child(3) { animation-delay: .48s; }
+@keyframes bootTitik {
+  0%, 100% { background: #3f3f46; box-shadow: none; }
+  30%      { background: var(--accent); box-shadow: 0 0 10px rgba(243, 108, 33, .8); }
+}
+
+/* Cadangan tanpa JavaScript: tirai tidak akan pernah terbuka sendiri,
+   jadi tampilkan tombol pelepas. Isinya hanya muncul kalau JavaScript
+   mati karena berada di dalam <noscript>. */
+#boot .boot-noscript {
+  margin: 22px 0 0;
+  color: #94a3b8;
+  font-size: 12px;
+  max-width: 260px;
+  text-align: center;
+  line-height: 1.6;
+}
+#boot .boot-lewati {
+  margin-top: 14px;
+  padding: 9px 18px;
+  border: 1px solid rgba(255, 255, 255, .22);
+  border-radius: 9999px;
+  background: transparent;
+  color: #e2e8f0;
+  font: inherit;
+  font-weight: 700;
+  font-size: 12px;
+  cursor: pointer;
+}
+#boot .boot-lewati:hover { border-color: var(--accent); color: var(--accent); }
+
+/* Tirai dibuka: terangkat ke atas (fill-mode forwards: tetap di atas
+   layar setelah selesai). pointer-events dimatikan supaya lapisan yang
+   sudah tak terlihat tidak pernah menahan klik. */
+html[data-siap] #boot {
+  animation: bootAngkat 560ms cubic-bezier(.7, 0, .3, 1) forwards;
+  pointer-events: none;
+}
+@keyframes bootAngkat {
+  from { transform: translateY(0); }
+  to   { transform: translateY(-100%); }
+}
+
+/* Gerak dikurangi: tanpa rel berjalan, tirai langsung hilang. Kalau hanya
+   animation:none yang dipasang, tirai akan tertinggal menutup layar - jadi
+   di sini display:none memang wajib. */
+@media (prefers-reduced-motion: reduce) {
+  html[data-siap] #boot { display: none; }
+  #boot .boot-rel span { animation: none; }
+}
+
+/* Sebelum gerbang dibuka, jangan tampilkan view mana pun. Aturan ini
+   menang atas ".view.is-active" karena selectornya lebih spesifik. */
+html:not([data-siap]) .view.is-active { display: none; }
+</style>
+  <link rel="canonical" href="https://sso.railfurs.my.id/" />
+  <link rel="icon" type="image/webp" href="images/logo.webp" />
+</head>
+
+<body class="text-slate-800" style="background:#0a0b0e">
+<!-- Tirai boot (lihat css-boot.css): menahan view sampai sesi dan
+     profil siap, supaya form login tidak berkedip di depan pengguna
+     yang sudah login. Tanpa JavaScript, tombol di bawah membukanya. -->
+<div id="boot" aria-hidden="true">
+  <div class="boot-isi">
+    <img src="images/logo-white.png" alt="Railfurs">
+    <div class="boot-rel" aria-hidden="true"><span></span><span></span><span></span></div>
+    <noscript>
+      <p class="boot-noscript">JavaScript mati, jadi form login tidak bisa dimuat otomatis.</p>
+      <button type="button" class="boot-lewati" onclick="var b=document.getElementById('boot'); if (b) { b.parentNode.removeChild(b); }">Lihat halaman</button>
+    </noscript>
+  </div>
+</div>
+<div id="view-login" class="view is-active min-h-screen flex-col justify-between relative overflow-hidden" style="background:#0a0b0e">
+
+  <!-- Latar: dot grid laser + 2 orb blur yang drift -->
+  
+  
+  
+
+  <!-- Header: brand + language selector -->
+  <header class="relative z-30 px-6 sm:px-10 lg:px-14 py-6 flex items-center justify-between border-b border-white/5">
+
+    <div class="flex items-center gap-3">
+      <button type="button" id="brand-btn" class="flex items-center gap-3 group cursor-pointer" title="Kembali ke Beranda Utama">
+        <img src="images/logo.webp" alt="Indonesian Railfurs Logo"
+             class="h-10 w-auto object-contain brightness-0 invert drop-shadow-md group-hover:scale-105 transition-transform duration-300" />
+        <div class="h-6 w-px bg-white/20 hidden sm:block"></div>
+        <div class="hidden sm:flex flex-col text-left">
+          <span class="text-xs font-mono font-black tracking-[0.25em] text-white uppercase leading-none">INDONESIAN RAILFURS</span>
+          <span class="text-[9px] font-mono text-neutral-400 uppercase tracking-widest mt-1">CONNECTING FANDOMS &amp; ROLLING STOCK</span>
+        </div>
+      </button>
+    </div>
+
+  </header>
+
+  <!-- Main: split screen -->
+  <main class="flex-1 max-w-7xl mx-auto w-full px-6 sm:px-10 lg:px-14 py-8 md:py-12 flex items-center">
+    <div class="w-full grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-center">
+
+      <!-- KOLOM KIRI -->
+      <div class="screen-host w-full lg:col-span-5 space-y-6 text-white">
+
+        <!-- SCREEN 1: WELCOME -->
+        <section id="screen-welcome" class="screen is-active space-y-6">
+          <div class="space-y-3">
+            <span class="text-xs font-mono font-bold tracking-[0.25em] text-neutral-400 uppercase block">SELAMAT DATANG DI</span>
+            <h1 class="text-4xl sm:text-5xl lg:text-6xl font-black text-white tracking-tight leading-none">Single Sign On</h1>
+          </div>
+
+          <p class="text-xs sm:text-sm text-neutral-400 leading-relaxed max-w-md">Satu login untuk semua layanan IRS.</p>
+
+          <div class="pt-2">
+            <button type="button" onclick="showFormMode()"
+              class="btn-masuk relative overflow-hidden px-8 py-3.5 bg-[#c2410c] hover:bg-[#9a3412] text-white text-xs font-mono font-black uppercase tracking-[0.2em] rounded-md shadow-[0_10px_30px_rgba(243,108,33,0.35)] hover:shadow-[0_15px_35px_rgba(243,108,33,0.45)] transition-all cursor-pointer inline-flex items-center gap-2 transform hover:-translate-y-0.5 active:translate-y-0">
+              <span>MASUK</span>
+              <span class="ico-arrow transition-transform">&rarr;</span>
+            </button>
+          </div>
+        </section>
+
+        <!-- SCREEN 2: FORM SSO -->
+        <section id="screen-form" class="screen space-y-4 max-w-sm">
+          <div>
+            <h1 class="text-2xl sm:text-3xl font-black text-white tracking-tight uppercase leading-none">Single Sign On</h1>
+            <p class="text-xs text-neutral-400 mt-1">Pilih metode masuk</p>
+          </div>
+
+          <div class="flex gap-2.5">
+            <button type="button" id="btn-discord" onclick="socialLogin('discord')"
+              class="flex-1 flex items-center justify-center gap-2 py-3 px-4 bg-[#5865F2] hover:bg-[#4752c4] text-white rounded font-mono text-xs font-bold transition-all cursor-pointer shadow-sm hover:shadow-[0_8px_24px_rgba(88,101,242,.45)] hover:-translate-y-0.5 active:translate-y-0"
+              title="Masuk menggunakan akun Discord">
+              <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994.021-.041.001-.09-.041-.106a13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.929 1.793 8.18 1.793 12.061 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.893.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.028zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg>
+              <span data-label>Discord</span>
+            </button>
+
+            <button type="button" id="btn-google" onclick="socialLogin('google')"
+              class="flex-1 flex items-center justify-center gap-2 py-3 px-4 bg-white hover:bg-neutral-100 text-black rounded font-mono text-xs font-bold transition-all cursor-pointer shadow-sm hover:shadow-[0_8px_24px_rgba(255,255,255,.28)] hover:-translate-y-0.5 active:translate-y-0"
+              title="Masuk menggunakan akun Google">
+              <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24">
+                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+              </svg>
+              <span data-label>Google</span>
+            </button>
+          </div>
+
+          <div class="relative pt-1 space-y-2.5">
+            <div>
+              <label class="text-[10px] font-mono font-bold uppercase tracking-wider text-neutral-400 block mb-1">EMAIL ATAU ID ANGGOTA</label>
+              <input type="text" disabled value="nama@railfurs.id atau email pendaftar"
+                class="w-full px-3.5 py-2 bg-neutral-900/90 text-neutral-300 font-mono text-xs rounded-md border border-white/10 cursor-not-allowed select-none" />
+            </div>
+
+            <div>
+              <label class="text-[10px] font-mono font-bold uppercase tracking-wider text-neutral-400 block mb-1">KATA SANDI</label>
+              <input type="password" disabled value="••••••••••••"
+                class="w-full px-3.5 py-2 bg-neutral-900/90 text-neutral-400 font-mono text-xs rounded-md border border-white/10 cursor-not-allowed select-none" />
+            </div>
+
+            
+          </div>
+
+          <div class="pt-2 border-t border-white/10 flex items-center text-xs font-mono">
+            <button type="button" onclick="showWelcomeMode()" class="text-neutral-500 hover:text-white transition-colors cursor-pointer">&larr; Kembali</button>
+          </div>
+        </section>
+      </div>
+
+      <!-- KOLOM KANAN -->
+      <div id="photo-col" class="w-full flex items-center justify-center relative lg:col-span-7 min-h-[380px] sm:min-h-[440px] overflow-visible">
+        
+
+        
+
+        
+
+        
+        
+        
+
+        <div id="photo-dropzone"
+          class="w-full max-w-lg min-h-[360px] sm:min-h-[420px] flex flex-col items-center justify-center p-4 text-center transition-all cursor-pointer relative z-10 group"
+          title="Klik untuk menaruh atau mengganti foto Anda di sini">
+
+          <img id="custom-photo-preview" src="" alt="Custom Foto"
+            class="max-h-[420px] w-auto max-w-full object-contain drop-shadow-2xl transition-all duration-300 hidden rounded-lg group-hover:scale-[1.02]" />
+
+          <div id="photo-placeholder" class="space-y-4 max-w-xs text-center py-8">
+            <div class="w-14 h-14 rounded-full bg-white/5 flex items-center justify-center mx-auto text-neutral-400 group-hover:text-white transition-all" style="">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <rect width="18" height="18" x="3" y="3" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>
+              </svg>
+            </div>
+            <div class="space-y-1">
+              <h3 class="text-xs font-mono font-bold tracking-widest uppercase text-neutral-300 group-hover:text-white transition-colors">Space Foto</h3>
+              <p class="text-[11px] text-neutral-500 leading-relaxed">Klik untuk pasang foto profil.</p>
+            </div>
+            <div class="pt-1">
+              <span class="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-mono font-medium text-neutral-400 hover:text-white transition-colors">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5"/><path d="M12 3v12"/></svg>
+                <span>+ Pasang Foto</span>
+              </span>
+            </div>
+          </div>
+
+          <div id="photo-overlay"
+            class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2 text-white backdrop-blur-[2px] rounded-lg pointer-events-none hidden">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5"/><path d="M12 3v12"/></svg>
+            <span class="text-xs font-mono font-bold uppercase tracking-wider">Ganti / Hapus Foto</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <footer class="relative z-30 px-6 sm:px-10 lg:px-14 py-6 flex items-center justify-between gap-4 border-t border-white/5 text-[11px] text-neutral-500 font-mono">
+    <p>&copy; 2026 INDONESIAN RAILFURS COMMUNITY</p>
+  </footer>
+</div>
+<div id="view-dashboard" class="view w-full min-h-screen py-6 sm:py-8 px-4 sm:px-6 lg:px-8" style="background:var(--bg-page)">
+  <div class="max-w-7xl mx-auto">
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+
+      <!-- KOLOM KIRI: KARTU PROFIL -->
+      <aside class="lg:col-span-4 w-full flex flex-col">
+        <div class="bg-white border border-slate-200 rounded-2xl shadow-sm flex flex-col h-full relative overflow-hidden">
+
+          <div class="dash-head px-6 py-4 border-b flex items-center justify-between rounded-t-2xl">
+            <div class="flex items-center gap-3">
+              <img src="images/logo-white.png" alt="IRS Logo"
+                   class="h-9 w-auto object-contain drop-shadow-sm" />
+              <div class="flex flex-col">
+                <span class="text-[12px] font-black uppercase tracking-wider text-white leading-tight">INDONESIAN RAILFURS</span>
+                <span class="text-[8.5px] font-mono tracking-widest font-black uppercase" style="color:#fdba74">ANGGOTA SEJAK 2022</span>
+              </div>
+            </div>
+
+            <button type="button" onclick="confirmLogout()" title="Keluar dari Akun"
+              class="w-8 h-8 rounded-full bg-white text-slate-500 border border-slate-200 flex items-center justify-center hover:text-rose-600 hover:border-rose-200 hover:scale-110 active:scale-95 transition-all cursor-pointer">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/></svg>
+            </button>
+          </div>
+
+          <div class="p-6 space-y-5 flex-1 flex flex-col">
+
+            <div class="flex flex-col items-center text-center space-y-3 pt-1">
+              <div class="relative group">
+                <div id="avatar-frame" class="w-36 h-44 sm:w-40 sm:h-48 rounded-xl bg-slate-50 border-2 border-white shadow-md overflow-hidden relative transition-transform duration-300 group-hover:scale-[1.03]">
+                  <img id="avatar-img" alt="Foto Anggota"
+                       class="w-full h-full object-cover" />
+                  <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                    <button type="button" onclick="openEditModal('foto')"
+                      class="px-3 py-1.5 bg-white text-slate-900 text-[10px] font-bold uppercase rounded-md shadow-sm cursor-pointer hover:scale-105 transition-transform">
+                      Ubah Foto
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="flex items-center gap-2 pt-1 w-full justify-center">
+                <button type="button" onclick="editBiodata()"
+                  class="ico-btn inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border text-[11px] font-semibold hover:-translate-y-0.5 transition-all cursor-pointer"
+                  style="background:var(--tint-amber); border-color:#fde68a; color:var(--tint-amber-fg)">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="7.5" cy="15.5" r="4.5"/><path d="m10.7 12.3 7.1-7.1"/><path d="m16 6 2 2"/><path d="m19 3 2 2"/></svg>
+                  <span>Biodata Tiket</span>
+                </button>
+                <button type="button" onclick="openEditModal('avatar')"
+                  class="ico-btn inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border text-[11px] font-semibold hover:-translate-y-0.5 transition-all cursor-pointer"
+                  style="background:var(--tint-sky); border-color:#bae6fd; color:var(--tint-sky-fg)">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
+                  <span>Ganti Avatar</span>
+                </button>
+              </div>
+
+              <!-- Satu kalimat yang menjawab pertanyaan yang paling sering
+                   muncul: "form yang di sini buat apa?" Tanpa ini, biodata
+                   terlihat seperti formulir pendaftaran, padahal isinya hanya
+                   dipakai untuk data tiket. Orang yang sebenarnya mau
+                   mendaftar lalu berhenti di sini dan mengisi 6 kolom yang
+                   tidak pernah masuk ke meja sidang.
+                   Ditambah satu tautan ke JOIN supaya jalan yang benar tetap
+                   tersedia di tempat yang salah orang salah mendarat. -->
+              <p id="bio-petunjuk" class="text-[10px] leading-relaxed text-slate-500 text-center px-2 -mt-1">
+                Untuk data pembeli tiket.
+                <button type="button" onclick="goJoin()" class="underline font-semibold text-slate-700 hover:text-slate-900 cursor-pointer">Mau jadi anggota? Daftar di sini</button>
+              </p>
+
+              <div class="space-y-0.5 pt-1">
+                <h2 id="db-nama" class="text-lg font-black text-slate-900 uppercase tracking-tight">Tamu</h2>
+                <p class="text-xs font-mono font-semibold text-slate-500 tracking-wider">No. <span id="db-nomor">—</span></p>
+
+                <!--
+                  Strip "sudah isi biodata tapi belum daftar".
+                  Ini menangkap pola kegagalan yang paling sering terjadi:
+                  biodata tiket terisi lengkap rapi, orang membaca semua
+                  kolom itu dan menyimpulkan prosesnya selesai - padahal
+                  barisnya ada di tab Guests yang tidak pernah dibaca meja
+                  sidang. Tanpa strip ini, tidak ada satu pun tempat di
+                  halaman yang mengatakan "ini baru setengah jalan".
+                  Kontrolnya di aturStripAnggota() (bangun-sso.mjs):
+                  hanya muncul untuk tamu yang nama sudah terisi dan belum
+                  pernah mengirim formulir pendaftaran.
+                -->
+                <div id="strip-belum-anggota" class="hidden strip-belum-anggota">
+                  <p class="sb-judul">Biodata tiket sudah terisi</p>
+                  <p class="sb-ket">Belum jadi anggota. Untuk masuk meja sidang, isi formulir pendaftaran.</p>
+                  <button type="button" onclick="goJoin()" class="sb-aksi">Buka formulir pendaftaran</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="space-y-3 pt-3 border-t border-slate-100 text-xs">
+              <div class="row flex items-center gap-3">
+                <div class="ico t-sky w-8 h-8 rounded-lg flex items-center justify-center shrink-0">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                </div>
+                <div class="flex-1 truncate"><span class="block text-[9px] font-mono uppercase tracking-widest text-neutral-400">Nama Asli</span><span id="db-nama-asli" class="font-semibold text-slate-800 block truncate">••••••</span></div>
+                <button type="button" class="eye-btn shrink-0 text-neutral-400 hover:text-neutral-700 cursor-pointer" onclick="toggleEye('nama')" data-eye="nama" title="Tampilkan/sembunyikan" aria-label="Tampilkan atau sembunyikan nama asli"></button>
+              </div>
+
+              <div class="row flex items-center gap-3">
+                <div class="ico t-mint w-8 h-8 rounded-lg flex items-center justify-center shrink-0">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
+                </div>
+                <div class="flex-1 truncate"><span class="block text-[9px] font-mono uppercase tracking-widest text-neutral-400">Fursona</span><span id="db-fursona" class="font-semibold text-slate-800 block truncate">—</span></div>
+              </div>
+
+              <div class="row flex items-center gap-3">
+                <div class="ico t-rose w-8 h-8 rounded-lg flex items-center justify-center shrink-0">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.9.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92"/></svg>
+                </div>
+                <div class="flex-1 truncate"><span class="block text-[9px] font-mono uppercase tracking-widest text-neutral-400">WhatsApp</span><span id="db-wa" class="font-semibold text-slate-800 block truncate">••••••</span></div>
+                <button type="button" class="eye-btn shrink-0 text-neutral-400 hover:text-neutral-700 cursor-pointer" onclick="toggleEye('wa')" data-eye="wa" title="Tampilkan/sembunyikan" aria-label="Tampilkan atau sembunyikan nomor WhatsApp"></button>
+              </div>
+
+              <div class="row flex items-center gap-3">
+                <div class="ico t-amber w-8 h-8 rounded-lg flex items-center justify-center shrink-0">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0"/><circle cx="12" cy="10" r="3"/></svg>
+                </div>
+                <div class="flex-1 truncate"><span class="block text-[9px] font-mono uppercase tracking-widest text-neutral-400">Domisili</span><span id="db-domisili" class="font-semibold text-slate-800 block truncate">—</span></div>
+              </div>
+
+              <div class="row flex items-center gap-3 pt-1">
+                <div class="ico t-green w-8 h-8 rounded-lg flex items-center justify-center shrink-0">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 1.9 5.8L20 10.7l-5.1 3.6L16.1 20 12 16.9 7.9 20l1.2-5.7L4 10.7l6.1-1.9z"/></svg>
+                </div>
+                <div class="flex-1 flex items-center gap-2">
+                  <span id="db-status" class="font-bold" style="color:var(--tint-green-fg)">Tamu</span>
+                  <span class="a-dot w-2 h-2 rounded-full" style="background:var(--ok)"></span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </aside>
+
+      <!-- KOLOM KANAN -->
+      <div class="lg:col-span-8 w-full flex flex-col h-full space-y-6">
+
+        <!-- 1. Welcome banner -->
+        <div class="relative rounded-2xl border border-amber-100 overflow-hidden shadow-sm shrink-0 min-h-[194px] sm:min-h-[210px]"
+             style="background:var(--grad-warm)">
+
+          <!-- ============ SCENE PERON: FULL WIDTH (layer paling bawah) ============ -->
+          <div class="absolute inset-x-0 bottom-0 pointer-events-none select-none" aria-hidden="true">
+            <svg viewBox="0 0 1200 240" class="w-full block" style="height:auto">
+
+              <defs>
+                <pattern id="rsTiles" width="30" height="24" patternUnits="userSpaceOnUse">
+                  <rect x="6" width="2.4" height="24" fill="#a8a29e" opacity=".38"/>
+                </pattern>
+                <pattern id="rsDots" width="20" height="8" patternUnits="userSpaceOnUse">
+                  <circle cx="10" cy="4" r="1.4" fill="#b45309" opacity=".45"/>
+                </pattern>
+                <linearGradient id="rsCone" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stop-color="#fde68a" stop-opacity=".6"/>
+                  <stop offset="100%" stop-color="#fde68a" stop-opacity="0"/>
+                </linearGradient>
+              </defs>
+
+              <!-- Burung melintas -->
+              <g class="rs-birds" fill="none" stroke="#a8a29e" stroke-width="1.7" stroke-linecap="round">
+                <path d="M0 0 q3.5 -3 7 0 q3.5 -3 7 0"/>
+                <path d="M14 -5 q2.7 -2.2 5.4 0 q2.7 -2.2 5.4 0"/>
+              </g>
+
+              <!-- Atap peron (full bleed) -->
+              <rect x="-40" y="0" width="1280" height="24" fill="#d6d3d1"/>
+              <rect x="-40" y="0" width="1280" height="24" fill="url(#rsTiles)"/>
+              <rect x="-40" y="24" width="1280" height="6" fill="#a8a29e"/>
+
+              <!-- Tiang penopang -->
+              <g fill="#c4beb6">
+                <rect x="33" y="30" width="26" height="9" rx="2"/><rect x="253" y="30" width="26" height="9" rx="2"/>
+                <rect x="473" y="30" width="26" height="9" rx="2"/><rect x="693" y="30" width="26" height="9" rx="2"/>
+                <rect x="913" y="30" width="26" height="9" rx="2"/><rect x="1133" y="30" width="26" height="9" rx="2"/>
+                <rect x="31" y="161" width="30" height="10" rx="3"/><rect x="251" y="161" width="30" height="10" rx="3"/>
+                <rect x="471" y="161" width="30" height="10" rx="3"/><rect x="691" y="161" width="30" height="10" rx="3"/>
+                <rect x="911" y="161" width="30" height="10" rx="3"/><rect x="1131" y="161" width="30" height="10" rx="3"/>
+              </g>
+              <g fill="#a8a29e">
+                <rect x="40" y="37" width="13" height="126" rx="3"/><rect x="260" y="37" width="13" height="126" rx="3"/>
+                <rect x="480" y="37" width="13" height="126" rx="3"/><rect x="700" y="37" width="13" height="126" rx="3"/>
+                <rect x="920" y="37" width="13" height="126" rx="3"/><rect x="1140" y="37" width="13" height="126" rx="3"/>
+              </g>
+
+              <!-- Papan nomor peron, DIPASANG di tiang -->
+              <g class="rs-minor">
+                <rect x="681" y="86" width="51" height="30" rx="6" fill="#ffffff" stroke="#a8a29e" stroke-width="2.4"/>
+                <text x="706.5" y="107" font-size="15" font-weight="700" text-anchor="middle" fill="#78716c" font-family="monospace">2</text>
+              </g>
+
+              <!-- Jam peron: MENGGANTUNG dari atap lewat stem + bracket -->
+              <g class="rs-clock">
+                <rect x="744" y="26" width="34" height="7" rx="2.5" fill="#78716c"/>
+                <line x1="761" y1="33" x2="761" y2="48" stroke="#78716c" stroke-width="3"/>
+                <circle cx="761" cy="78" r="30" fill="#fffbeb" stroke="#78716c" stroke-width="3.4"/>
+                <g stroke="#a8a29e" stroke-width="2.4" stroke-linecap="round">
+                  <line x1="761" y1="53" x2="761" y2="58"/>
+                  <line x1="761" y1="98" x2="761" y2="103"/>
+                  <line x1="736" y1="78" x2="741" y2="78"/>
+                  <line x1="781" y1="78" x2="786" y2="78"/>
+                </g>
+                <circle cx="761" cy="78" r="3.2" fill="#57534e"/>
+                
+                
+                <line id="rs-h" class="hand" x1="761" y1="78" x2="761" y2="59" stroke="#57534e" stroke-width="4.6" stroke-linecap="round"/>
+                <line id="rs-m" class="hand" x1="761" y1="78" x2="761" y2="52" stroke="#57534e" stroke-width="3.4" stroke-linecap="round"/>
+                <line id="rs-s" class="hand" x1="761" y1="78" x2="761" y2="50" stroke="#f36c21" stroke-width="2" stroke-linecap="round"/>
+              </g>
+
+              <!-- Lampu gantung pendant: bracket + kap + filamen + cone cahaya
+                   Urutan gambar menentukan mana yang tertutup: kap lampu
+                   digambar PALING AKHIR supaya memotong cone cahaya dan
+                   glow. Sebelumnya glow r12 digambar paling akhir dan
+                   terlihat sebagai bola kuning menempel di LUAR kap. -->
+              <g class="rs-lamp">
+                <rect x="882" y="26" width="36" height="7" rx="2.5" fill="#78716c"/>
+                <line x1="900" y1="33" x2="900" y2="45" stroke="#78716c" stroke-width="3.2"/>
+
+                <!-- Cone cahaya: menyempit di bawah kap (tidak melebar keluar) -->
+                <path d="M878 70 L922 70 L934 104 L866 104 Z" fill="url(#rsCone)" class="rs-cone"/>
+                <!-- Glow r 12 -> 8: masih memancar tapi titik terlebarnya
+                     (x 892..908) masih di dalam mulut kap (x 878..922). -->
+                <circle cx="900" cy="70" r="8" class="rs-lamp-glow"/>
+
+                <path d="M886 45 L914 45 L922 67 L878 67 Z" fill="#a8a29e"/>
+                <path d="M886 45 L898 45 L892 67 L878 67 Z" fill="#c4beb6"/>
+                <rect x="876" y="66" width="48" height="5" rx="2.5" fill="#78716c"/>
+
+                <!-- Filamen: hanya bagian bawahnya yang tampak, sisanya
+                     tertutup kap - inilah yang membuat lampu terbaca
+                     "menyala", bukan mengapung. -->
+                <circle cx="900" cy="71" r="5" fill="#fef08a"/>
+                <circle cx="900" cy="71" r="2.6" fill="#fffbeb"/>
+              </g>
+
+              <!-- Papan nama stasiun: digantung dari atap,fills ke tepi kanan.
+                   Teks diisi JS (id="rs-stasiun") supaya bisa diganti dari
+                   tab `Informasi` tanpa menyentuh kode. Isi di markup adalah
+                   cadangan kalau skrip tidak jalan. -->
+              <g class="rs-sign">
+                <rect x="1012" y="26" width="164" height="6" rx="2.5" fill="#78716c"/>
+                <line x1="1044" y1="32" x2="1044" y2="48" stroke="#78716c" stroke-width="2.4"/>
+                <line x1="1144" y1="32" x2="1144" y2="48" stroke="#78716c" stroke-width="2.4"/>
+                <rect x="1020" y="48" width="148" height="33" rx="7" fill="#ffffff" stroke="#78716c" stroke-width="2.4"/>
+                <rect x="1020" y="48" width="148" height="8" rx="4" fill="#57534e"/>
+                <text id="rs-stasiun" x="1094" y="71" font-size="16" font-weight="700" text-anchor="middle" fill="#44403c" font-family="monospace">SOLO</text>
+              </g>
+
+              <!-- Bangku peron -->
+              <g class="rs-bench rs-minor" fill="#a8a29e">
+                <rect x="150" y="142" width="92" height="9" rx="3"/><rect x="150" y="153" width="92" height="9" rx="3"/>
+                <rect x="158" y="162" width="7" height="9" rx="2"/><rect x="227" y="162" width="7" height="9" rx="2"/>
+              </g>
+              <g class="rs-bench rs-minor rs-delay" fill="#a8a29e">
+                <rect x="1074" y="142" width="110" height="9" rx="3"/><rect x="1074" y="153" width="110" height="9" rx="3"/>
+                <rect x="1082" y="162" width="7" height="9" rx="2"/><rect x="1169" y="162" width="7" height="9" rx="2"/>
+              </g>
+
+              <!-- Permukaan peron + strip pemandu taktil.
+                   SATU kuning untuk seluruh strip. Sebelumnya dua nuansa
+                   (#fbbf24 solid di kiri, .42 opacity di kanan) - bedanya
+                   bukan variasi tekstur tapi dua kuning yang bertemu
+                   berurutan, dan terbaca sebagai kesalahan warna.
+                   Sisanya dibuang; yang menggambarkan tepi peron sekarang
+                   baris #d6d3d1 di bawah, yang memang sudah ada. -->
+              <rect x="-40" y="171" width="1280" height="11" fill="#e7e5e4"/>
+              <rect x="-40" y="171" width="1280" height="8" fill="#fbbf24"/>
+              <rect x="-40" y="171" width="1280" height="8" fill="url(#rsDots)" opacity=".55"/>
+              <rect x="-40" y="182" width="1280" height="14" fill="#d6d3d1"/>
+
+              <!-- Rel + bantalan: DIAM, lebar + tinggi -->
+              <g fill="#a8a29e" opacity=".34">
+                <rect x="0" y="198" width="38" height="42" rx="3"/><rect x="50" y="198" width="38" height="42" rx="3"/>
+                <rect x="100" y="198" width="38" height="42" rx="3"/><rect x="150" y="198" width="38" height="42" rx="3"/>
+                <rect x="200" y="198" width="38" height="42" rx="3"/><rect x="250" y="198" width="38" height="42" rx="3"/>
+                <rect x="300" y="198" width="38" height="42" rx="3"/><rect x="350" y="198" width="38" height="42" rx="3"/>
+                <rect x="400" y="198" width="38" height="42" rx="3"/><rect x="450" y="198" width="38" height="42" rx="3"/>
+                <rect x="500" y="198" width="38" height="42" rx="3"/><rect x="550" y="198" width="38" height="42" rx="3"/>
+                <rect x="600" y="198" width="38" height="42" rx="3"/><rect x="650" y="198" width="38" height="42" rx="3"/>
+                <rect x="700" y="198" width="38" height="42" rx="3"/><rect x="750" y="198" width="38" height="42" rx="3"/>
+                <rect x="800" y="198" width="38" height="42" rx="3"/><rect x="850" y="198" width="38" height="42" rx="3"/>
+                <rect x="900" y="198" width="38" height="42" rx="3"/><rect x="950" y="198" width="38" height="42" rx="3"/>
+                <rect x="1000" y="198" width="38" height="42" rx="3"/><rect x="1050" y="198" width="38" height="42" rx="3"/>
+                <rect x="1100" y="198" width="38" height="42" rx="3"/><rect x="1150" y="198" width="38" height="42" rx="3"/>
+              </g>
+              <rect x="-40" y="203" width="1280" height="8" rx="4" fill="#78716c"/>
+              <rect x="-40" y="231" width="1280" height="8" rx="4" fill="#78716c"/>
+            </svg>
+          </div>
+
+          <!-- ============ SCRIM: melindungi area teks ============ -->
+          <div class="absolute inset-0 pointer-events-none" aria-hidden="true"
+               style="background:linear-gradient(100deg,
+                 rgba(255,246,237,.97) 0%,
+                 rgba(255,246,237,.95) 34%,
+                 rgba(255,246,237,.72) 46%,
+                 rgba(255,246,237,.18) 60%,
+                 rgba(255,246,237,0) 72%)"></div>
+
+          <!-- ============ KONTEN TEKS (layer atas) ============ -->
+          <div class="relative z-10 p-6 md:p-8 max-w-xl space-y-4">
+            <div>
+              <h1 class="text-xl sm:text-2xl md:text-3xl font-black tracking-tight" style="color:#7c2d12">
+                <span id="greeting">Selamat datang</span>, <span id="greet-nama">…</span>
+              </h1>
+              <p class="text-xs sm:text-sm text-amber-800 font-mono mt-1 font-medium" id="clock">…</p>
+            </div>
+
+            <div class="flex flex-wrap items-center gap-8 sm:gap-12 pt-2">
+              <div>
+                <span id="count-aktif" class="text-3xl sm:text-4xl font-black text-orange-900 leading-none block">–</span>
+                <span class="text-xs text-amber-800 font-semibold block mt-1">Tiket Aktif</span>
+              </div>
+              <div>
+                <span id="count-selesai" class="text-3xl sm:text-4xl font-black text-orange-900 leading-none block">–</span>
+                <span class="text-xs text-amber-800 font-semibold block mt-1">Event Selesai</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. Running text pengumuman -->
+        <div class="bg-white border border-slate-200 rounded-xl p-3 shadow-sm overflow-hidden shrink-0">
+          <div class="flex items-center gap-3">
+            <span class="px-2.5 py-1 text-white text-[10px] font-black uppercase rounded-md tracking-wider shrink-0 shadow-sm"
+                  style="background:linear-gradient(135deg,#c2410c 0%,#9a3412 100%)">PENGUMUMAN</span>
+
+            <div class="overflow-hidden w-full select-none cursor-default">
+              <div id="info-track" class="info-track text-xs text-slate-600 font-medium">
+                <span class="inline-block">Memuat pengumuman…</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. Website Single Sign On (2 kartu dalam kotak panel) -->
+        <div class="flex-1 flex flex-col">
+          <div class="sso-panel flex-1 flex flex-col bg-white border border-slate-200 rounded-2xl shadow-sm p-5 sm:p-6 space-y-5 relative overflow-hidden">
+
+            
+            
+
+            <div class="relative z-10 flex items-start justify-between gap-4 pb-1">
+              <div>
+                <h2 class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">Website Single Sign On</h2>
+                <p class="text-xs text-slate-500">Pindah layanan tanpa login ulang.</p>
+                <span class="accent-bar block mt-3 h-[3px] w-20 rounded-full" style="background:linear-gradient(90deg,#fb923c 0%,#f36c21 100%)"></span>
+              </div>
+
+              <span style=""
+                class="hidden sm:inline-flex shrink-0 items-center gap-1.5 px-2.5 py-1 rounded-md border border-slate-200 bg-slate-50 text-[10px] font-mono font-bold uppercase tracking-wider text-slate-500 transition-colors">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>
+                2 Layanan
+              </span>
+            </div>
+
+            <div class="relative z-10 grid grid-cols-1 sm:grid-cols-2 gap-5 flex-1">
+
+              <!-- KARTU 1: MEMBER (disembunyikan untuk tamu) -->
+              <div id="card-member" onclick="goMember()" title="Buka Portal Member"
+                class="card group bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all cursor-pointer flex flex-col justify-between h-full relative">
+
+                <div class="card-art w-full h-44 sm:h-48 relative flex items-center justify-center p-4 overflow-hidden border-b border-emerald-200/50" style="background:var(--grad-member)">
+                  <div class="absolute inset-0 opacity-20"></div>
+                  <div class="absolute inset-y-0 -left-full w-1/3 card-sheen pointer-events-none" style="background:linear-gradient(90deg,transparent,rgba(255,255,255,.55),transparent)"></div>
+
+                  <div class="relative z-10 w-full h-full flex items-center justify-center">
+                                      <!-- Ilustrasi KTA DIBUAT ULANG.
+                       Yang lama tali lanyard menjulur ke atas bingkai - dua
+                       garis hitam yang jatuh di atas tepi kartu dan terbaca
+                       seperti antena, bukan sebagai kartu yang digantung.
+                       Gantinya satu kartu KTA datar, lebar, dengan tinta yang
+                       jelas: kepala berwarna, foto, nama, nomor, barcode,
+                       dan segel terverifikasi di sudut. Tidak ada garis yang
+                       keluar dari tepi. -->
+                  <svg viewBox="0 0 240 140" class="h-full w-auto max-w-full drop-shadow-md transition-transform duration-300 group-hover:scale-105">
+                    <defs>
+                      <linearGradient id="ktaHdr" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stop-color="#047857"/><stop offset="100%" stop-color="#0d9488"/>
+                      </linearGradient>
+                    </defs>
+
+                    <!-- bayangan: memisahkan kartu dari latar, bukan lanyard -->
+                    <rect x="26" y="24" width="188" height="96" rx="10" fill="#0f172a" opacity=".14"/>
+
+                    <!-- badan kartu -->
+                    <rect x="26" y="20" width="188" height="96" rx="10" fill="#ffffff"/>
+
+                    <!-- kepala kartu: nama tanda + strip tanda -->
+                    <path d="M26 30a10 10 0 0 1 10-10h168a10 10 0 0 1 10 10v14H26z" fill="url(#ktaHdr)"/>
+                    <rect x="38" y="26" width="19" height="10" rx="2.5" fill="#ffffff" opacity=".95"/>
+                    <rect x="62" y="28.5" width="46" height="5" rx="2.5" fill="#ffffff" opacity=".75"/>
+                    <rect x="176" y="27.5" width="26" height="7" rx="2" fill="#ffffff" opacity=".6"/>
+
+                    <!-- foto anggota -->
+                    <circle cx="56" cy="74" r="16" fill="#e2e8f0" stroke="#cbd5e1"/>
+                    <circle cx="56" cy="69" r="5.5" fill="#94a3b8"/>
+                    <path d="M45 84 a11 11 0 0 1 22 0 z" fill="#94a3b8"/>
+
+                    <!-- nama + nomor anggota -->
+                    <rect x="80" y="64" width="72" height="9" rx="4.5" fill="#334155"/>
+                    <rect x="80" y="78" width="50" height="6" rx="3" fill="#cbd5e1"/>
+                    <rect x="80" y="89" width="62" height="6" rx="3" fill="#cbd5e1"/>
+
+                    <!-- lencana kecil: status terverifikasi -->
+                    <circle cx="184" cy="72" r="10" fill="#059669"/>
+                    <path d="M179 72 l3.6 3.6 l7 -7.6" fill="none" stroke="#ffffff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+
+                    <!-- barcode: mengisi sebahja lebar bawah kartu -->
+                    <g fill="#334155">
+                      <rect x="38" y="102" width="2.5" height="9"/>
+                      <rect x="43" y="102" width="1.5" height="9"/>
+                      <rect x="47" y="102" width="3.5" height="9"/>
+                      <rect x="53" y="102" width="1.5" height="9"/>
+                      <rect x="57" y="102" width="2" height="9"/>
+                      <rect x="62" y="102" width="3.5" height="9"/>
+                      <rect x="68" y="102" width="1.5" height="9"/>
+                      <rect x="72" y="102" width="2.5" height="9"/>
+                      <rect x="77" y="102" width="1.5" height="9"/>
+                      <rect x="81" y="102" width="3" height="9"/>
+                    </g>
+                    <rect x="90" y="103" width="42" height="3.5" rx="1.75" fill="#cbd5e1"/>
+                    <rect x="90" y="109" width="28" height="3.5" rx="1.75" fill="#e2e8f0"/>
+
+                    <!-- motif rel kecil: motif IRS tanpa keluar dari kartu -->
+                    <g opacity=".45">
+                      <rect x="146" y="102" width="2" height="9" fill="#64748b"/>
+                      <rect x="153" y="102" width="2" height="9" fill="#64748b"/>
+                      <rect x="143" y="106.5" width="15" height="2" rx="1" fill="#64748b"/>
+                    </g>
+                  </svg>
+                  </div>
+                </div>
+
+                <div class="p-5 flex items-center justify-between gap-3 bg-white">
+                  <div>
+                    <h3 class="text-base font-black text-slate-900 uppercase tracking-tight flex items-center gap-2">
+                      <span id="member-title">Member</span>
+                      <span id="member-badge" class="px-2 py-0.5 rounded text-[9px] font-mono font-bold" style="background:var(--tint-mint);color:var(--tint-mint-fg)">KTA</span>
+                    </h3>
+                    <p id="member-desc" class="text-xs text-slate-500 mt-0.5">Area Anggota, KTA Digital &amp; Manajemen Profil</p>
+                    <p class="card-untuk">Untuk anggota terverifikasi</p>
+                  </div>
+                  <div class="card-arrow w-9 h-9 rounded-full flex items-center justify-center shrink-0">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                  </div>
+                </div>
+              </div>
+
+              <!-- KARTU 2: TICKET -->
+              <div id="card-ticket" onclick="goTicket()" title="Buka Layanan Tiket"
+                class="card group bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all cursor-pointer flex flex-col justify-between h-full relative">
+
+                <div class="card-art w-full h-44 sm:h-48 relative flex items-center justify-center p-4 overflow-hidden border-b border-sky-200/50" style="background:var(--grad-ticket)">
+                  <div class="absolute inset-0 opacity-20"></div>
+                  <div class="absolute inset-y-0 -left-full w-1/3 card-sheen pointer-events-none" style="background:linear-gradient(90deg,transparent,rgba(255,255,255,.55),transparent)"></div>
+
+                  <div class="relative z-10 w-full h-full flex items-center justify-center">
+                                        <!-- Ilustrasi tiket yang DIBUAT ULANG.
+                         Yang lama sebuah monitor: kaki, layar, tulisan di
+                         dalam layar. Bentuknya menjurus ke "layar", bukan
+                         "tiket" - padahal yang diklik adalah pembelian tiket.
+                         Gantinya tiket sungguhan: badan + stub terlepas
+                         dengan garis sobek, kop berwarna, nomor kursi, dan
+                         pola kode di stub. Tidak ada teks mati; tulisan
+                         "JOYRIDE CTC" di kop adalah satu-satunya kalimat. -->
+                    <svg viewBox="0 0 240 140" class="h-full w-auto max-w-full drop-shadow-md transition-transform duration-300 group-hover:scale-105">
+                      <!-- Kabut bayangan: menahan tiket di atas permukaan. -->
+                      <ellipse cx="120" cy="122" rx="88" ry="5" fill="#075985" opacity=".14"/>
+
+                      <!-- Badan + stub. Dua keping dengan jarak, bukan satu
+                           kotak dengan garis di tengah: tiket yang sudah
+                           sobek terbaca tanpa perlu menebak. -->
+                      <rect x="30" y="22" width="136" height="86" rx="6" fill="#ffffff"/>
+                      <rect x="172" y="22" width="38" height="86" rx="6" fill="#f0f9ff"/>
+                      <line x1="172" y1="30" x2="172" y2="100" stroke="#7dd3fc" stroke-width="1.6" stroke-dasharray="3 4"/>
+
+                      <!-- Kop: mengikuti warna kartu supaya satu peron. -->
+                      <rect x="30" y="22" width="136" height="16" rx="6" fill="#0284c7"/>
+                      <rect x="30" y="32" width="136" height="6" fill="#0284c7"/>
+                      <text x="42" y="34" font-size="7" font-weight="bold" fill="#ffffff" letter-spacing="1.4">JOYRIDE CTC</text>
+
+                      <!-- Baris kode: bentuk tetap, isi dikosongkan. -->
+                      <rect x="42" y="48" width="56" height="6" rx="3" fill="#bae6fd"/>
+                      <rect x="42" y="60" width="38" height="6" rx="3" fill="#e0f2fe"/>
+
+                      <!-- Nomor kursi: yang paling sering dicari di tiket. -->
+                      <rect x="122" y="44" width="36" height="40" rx="6" fill="#fbbf24"/>
+                      <text x="140" y="61" font-size="6" font-weight="bold" text-anchor="middle" fill="#78350f" letter-spacing=".6">KURSI</text>
+                      <text x="140" y="78" font-size="15" font-weight="bold" text-anchor="middle" fill="#0f172a">12</text>
+
+                      <!-- Stub: pola kode, bukan kalimat. -->
+                      <rect x="182" y="44" width="18" height="18" rx="3" fill="#ffffff" stroke="#7dd3fc" stroke-width="1.4"/>
+                      <rect x="185" y="47" width="4" height="4" fill="#0284c7"/>
+                      <rect x="193" y="47" width="4" height="4" fill="#0284c7"/>
+                      <rect x="185" y="55" width="4" height="4" fill="#0284c7"/>
+                      <rect x="193" y="55" width="4" height="4" fill="#0284c7"/>
+                      <rect x="189" y="51" width="4" height="4" fill="#fbbf24"/>
+                      <rect x="182" y="68" width="18" height="4" rx="2" fill="#bae6fd"/>
+                      <rect x="182" y="76" width="12" height="4" rx="2" fill="#e0f2fe"/>
+
+                      <!-- Rel di bawah: motif peron tanpa meniru banner. -->
+                      <rect x="30" y="114" width="180" height="3" rx="1.5" fill="#64748b" opacity=".3"/>
+                      <rect x="30" y="120" width="180" height="3" rx="1.5" fill="#64748b" opacity=".3"/>
+                    </svg>
+                  </div>
+                </div>
+
+                <div class="p-5 flex items-center justify-between gap-3 bg-white">
+                  <div>
+                    <h3 class="text-base font-black text-slate-900 uppercase tracking-tight flex items-center gap-2">
+                      <span>Beli Tiket</span>
+                      <span id="ticket-badge" class="px-2 py-0.5 rounded text-[9px] font-mono font-bold" style="background:var(--tint-sky);color:var(--tint-sky-fg)">TIKET</span>
+                    </h3>
+                    <p id="ticket-desc" class="text-xs text-slate-500 mt-0.5">Reservasi kursi Joyride CTC</p>
+                    <!-- Satu baris yang menjawab "ini untuk siapa?". Judul di
+                         atas sudah kata kerja (Beli Tiket), tapi orang masih
+                         perlu tahu boleh-tidaknya ia yang memakai jalur ini.
+                         Sengaja TIDAK menyebut "anggota": kata itu di kartu
+                         sebelah sudah cukup, dan di sini justru membuat
+                         orang mengira haknya terbatas. -->
+                    <p class="card-untuk">Untuk pembeli tiket</p>
+                  </div>
+                  <div class="card-arrow w-9 h-9 rounded-full flex items-center justify-center shrink-0">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                  </div>
+                </div>
+              </div>
+
+              <!-- KARTU JOIN: khusus tamu (disembunyikan untuk anggota).
+                   Satu slot bertukar dengan kartu member: tamu melihat
+                   [Tiket, Join], anggota melihat [Member, Tiket]. -->
+              <div id="card-join" onclick="goJoin()" title="Gabung Jadi Anggota"
+                class="hidden card group bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all cursor-pointer flex flex-col justify-between h-full relative">
+
+                <div class="card-art w-full h-44 sm:h-48 relative flex items-center justify-center p-4 overflow-hidden border-b border-orange-200/50" style="background:var(--grad-join)">
+                  <div class="absolute inset-y-0 -left-full w-1/3 card-sheen pointer-events-none" style="background:linear-gradient(90deg,transparent,rgba(255,255,255,.55),transparent)"></div>
+
+                  <div class="relative z-10 w-full h-full flex items-center justify-center">
+                    <svg viewBox="0 0 240 140" class="h-full w-auto max-w-full drop-shadow-md transition-transform duration-300 group-hover:scale-105">
+                      <rect x="78" y="18" width="84" height="104" rx="10" fill="#ffffff"/>
+                      <rect x="78" y="18" width="84" height="26" rx="10" fill="#f36c21"/>
+                      <rect x="78" y="36" width="84" height="8" fill="#f36c21"/>
+                      <rect x="90" y="26" width="34" height="6" rx="3" fill="#ffffff" opacity=".85"/>
+                      <rect x="90" y="56" width="60" height="7" rx="3.5" fill="#e2e8f0"/>
+                      <rect x="90" y="69" width="60" height="7" rx="3.5" fill="#e2e8f0"/>
+                      <rect x="90" y="82" width="42" height="7" rx="3.5" fill="#e2e8f0"/>
+                      <rect x="90" y="98" width="60" height="12" rx="6" fill="#15803d"/>
+                      <circle cx="150" cy="102" r="14" fill="#f36c21" stroke="#ffffff" stroke-width="3"/>
+                      <path d="M150 95v14M143 102h14" stroke="#ffffff" stroke-width="3.5" stroke-linecap="round"/>
+                    </svg>
+                  </div>
+                </div>
+
+                <div class="p-5 flex items-center justify-between gap-3 bg-white">
+                  <div>
+                    <h3 class="text-base font-black text-slate-900 uppercase tracking-tight flex items-center gap-2">
+                      <span>Daftar Anggota</span>
+                      <span id="join-badge" class="px-2 py-0.5 rounded text-[9px] font-mono font-bold" style="background:var(--tint-amber);color:var(--tint-amber-fg)">PENDAFTARAN</span>
+                    </h3>
+                    <p id="join-desc" class="text-xs text-slate-500 mt-0.5">Jadi Anggota IRS &amp; Verifikasi KTA</p>
+                    <!-- "Join" adalah nama layanan, bukan instruksi. Dibaca
+                         orang yang belum paham istilah komunitas, itu tidak
+                         mengatakan siapa yang harus menekannya.
+                         Kalimatnya bertanya, bukan menyatakan: tidak ada
+                         yang "dicalonkan" lewat membuka kartu ini. -->
+                    <p class="card-untuk">Ingin menjadi anggota?</p>
+                  </div>
+                  <div class="card-arrow w-9 h-9 rounded-full flex items-center justify-center shrink-0">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     MODAL PASANG FOTO (LOGIN)
+     ============================================================ -->
+<div id="photo-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-xs">
+  <div class="bg-[#12141c] border border-white/20 max-w-md w-full rounded-2xl p-6 space-y-5 text-white shadow-2xl" id="photo-modal-card">
+    <div class="flex items-center justify-between border-b border-white/10 pb-3">
+      <h3 class="font-mono font-black text-sm uppercase tracking-wider text-white">Pasang Foto di Space Kanan</h3>
+      <button type="button" onclick="closePhotoModal()" class="text-neutral-400 hover:text-white font-bold p-1 transition-transform hover:rotate-90">✕</button>
+    </div>
+
+    <div class="space-y-4 text-xs">
+      <div class="space-y-2">
+        <label class="block font-bold text-neutral-300">1. Pilih Berkas Foto dari Komputer</label>
+        <input type="file" id="file-photo-input" accept="image/*"
+          class="w-full text-xs text-neutral-400 file:mr-3 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-[#c2410c] file:text-white hover:file:bg-[#9a3412] file:cursor-pointer" />
+      </div>
+
+      <div class="flex items-center gap-2 text-neutral-500 text-[10px] font-mono">
+        <div class="flex-1 h-px bg-white/10"></div><span>ATAU</span><div class="flex-1 h-px bg-white/10"></div>
+      </div>
+
+      <div class="space-y-2">
+        <label class="block font-bold text-neutral-300">2. Masukkan URL / Tautan Foto</label>
+        <div class="flex gap-2">
+          <input type="url" id="url-photo-input" placeholder="https://..."
+            class="flex-1 px-3 py-2 bg-neutral-900 border border-white/20 rounded text-xs text-white focus:outline-none focus:border-[#f36c21] transition-colors" />
+          <button type="button" onclick="applyPhotoUrl()"
+            class="px-4 py-2 bg-[#c2410c] hover:bg-[#9a3412] text-white font-bold rounded text-xs cursor-pointer shrink-0 transition-all hover:-translate-y-0.5">Gunakan</button>
+        </div>
+      </div>
+
+      <div id="photo-current-row" class="hidden pt-2 border-t border-white/10 flex justify-between items-center">
+        <span class="text-[11px] text-emerald-400 font-mono flex items-center gap-1">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+          Foto saat ini terpasang
+        </span>
+        <button type="button" onclick="clearPhoto()" class="text-xs text-rose-400 hover:text-rose-300 underline cursor-pointer">Kosongkan Kembali</button>
+      </div>
+    </div>
+
+    <div class="pt-3 border-t border-white/10 flex justify-end">
+      <button type="button" onclick="closePhotoModal()" class="px-4 py-2 border border-white/20 text-neutral-300 hover:text-white hover:bg-white/5 rounded text-xs font-bold transition-all">Tutup</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     MODAL EDIT PROFIL (DASHBOARD)
+     ============================================================ -->
+<div id="edit-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/55 backdrop-blur-sm">
+  <div id="edit-card" class="relative bg-white border border-slate-200 max-w-md w-full rounded-2xl p-6 space-y-5 shadow-2xl">
+    <!-- Cap peron: stempel keberhasilan. Disembunyikan dengan .hidden
+         (display:none), BUKAN opacity:0 - aturan proyek melarang opacity 0
+         di luar keyframes. Muncul hanya saat biodata/avatar tersimpan. -->
+    <div id="bio-cap" class="hidden absolute -top-5 -right-4 w-20 h-20 rounded-full items-center justify-center" style="background:#15803d;border:3px double #ffffff;box-shadow:0 8px 20px -6px rgba(21,128,61,.6)">
+      <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+        <path id="bio-cap-centang" d="M20 6 9 17l-5-5"/>
+      </svg>
+    </div>
+    <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+      <h3 id="edit-title" class="font-black text-base uppercase text-slate-900">Ubah Foto</h3>
+      <button type="button" onclick="closeEditModal()" class="text-slate-400 hover:text-slate-900 font-bold p-1 transition-all cursor-pointer hover:rotate-90">✕</button>
+    </div>
+
+    <div id="edit-avatar" class="space-y-4 text-xs">
+      <div id="edit-presets">
+        <label class="block font-bold text-slate-700 mb-1.5">Pilih Avatar Preset Tersedia</label>
+        <div id="avatar-presets" class="grid grid-cols-5 gap-2"></div>
+      </div>
+      <div id="edit-presets-sep" class="flex items-center gap-2 text-slate-400 text-[10px] font-mono">
+        <div class="flex-1 h-px bg-slate-200"></div><span>ATAU</span><div class="flex-1 h-px bg-slate-200"></div>
+      </div>
+      <div>
+        <label class="block font-bold text-slate-700 mb-1.5">Unggah Foto Dari Komputer</label>
+        <input type="file" id="edit-file" accept="image/*"
+          class="w-full text-xs text-slate-500 file:mr-3 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-[#c2410c] file:text-white hover:file:bg-[#9a3412] file:cursor-pointer" />
+      </div>
+    </div>
+
+    <div id="edit-biodata" class="hidden space-y-3 text-xs">
+      <!-- Di dalam modal pun tujuannya disebut. Tombol di luar sudah
+           menjelaskan, tapi orang yang sudah terlanjur membuka
+           modal ini tidak membaca yang di luar. -->
+      <p class="text-[10px] leading-relaxed text-slate-500 border-l-2 border-amber-300 pl-2.5">
+        Data ini dipakai untuk pembelian tiket. Untuk menjadi anggota, isi formulir pendaftaran.
+      </p>
+      <div>
+        <label class="block font-bold text-slate-700 mb-1">Nama Asli</label>
+        <input type="text" id="bio-nama" maxlength="100" placeholder="Nama lengkap"
+          class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded focus:outline-none focus:border-[#f36c21] focus:ring-2 focus:ring-[#f36c21]/15 transition-all" />
+      </div>
+      <div>
+        <label class="block font-bold text-slate-700 mb-1">Nama Fursona</label>
+        <input type="text" id="bio-fursona" maxlength="60" placeholder="Nama karakter"
+          class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded focus:outline-none focus:border-[#f36c21] focus:ring-2 focus:ring-[#f36c21]/15 transition-all" />
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Umur</label>
+          <input type="text" id="bio-umur" inputmode="numeric" maxlength="2" placeholder="13-99"
+            class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded focus:outline-none focus:border-[#f36c21] focus:ring-2 focus:ring-[#f36c21]/15 transition-all" />
+        </div>
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Domisili</label>
+          <input type="text" id="bio-domisili" maxlength="80" placeholder="Kota"
+            class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded focus:outline-none focus:border-[#f36c21] focus:ring-2 focus:ring-[#f36c21]/15 transition-all" />
+        </div>
+      </div>
+      <div>
+        <label class="block font-bold text-slate-700 mb-1">WhatsApp</label>
+        <input type="text" id="bio-wa" inputmode="tel" maxlength="20" placeholder="08xx xxxx xxxx"
+          class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded focus:outline-none focus:border-[#f36c21] focus:ring-2 focus:ring-[#f36c21]/15 transition-all" />
+      </div>
+      <div>
+        <label class="block font-bold text-slate-700 mb-1">Media Sosial</label>
+        <input type="text" id="bio-sosmed" maxlength="120" placeholder="Akun atau tautan"
+          class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded focus:outline-none focus:border-[#f36c21] focus:ring-2 focus:ring-[#f36c21]/15 transition-all" />
+      </div>
+    </div>
+
+    <div id="edit-password" class="hidden space-y-3 text-xs">
+      <div>
+        <label class="block font-bold text-slate-700 mb-1">Kata Sandi Lama</label>
+        <input type="password" placeholder="••••••••" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded focus:outline-none focus:border-[#f36c21] focus:ring-2 focus:ring-[#f36c21]/15 transition-all" />
+      </div>
+      <div>
+        <label class="block font-bold text-slate-700 mb-1">Kata Sandi Baru</label>
+        <input type="password" placeholder="••••••••" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded focus:outline-none focus:border-[#f36c21] focus:ring-2 focus:ring-[#f36c21]/15 transition-all" />
+      </div>
+      <div>
+        <label class="block font-bold text-slate-700 mb-1">Konfirmasi Kata Sandi Baru</label>
+        <input type="password" placeholder="••••••••" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded focus:outline-none focus:border-[#f36c21] focus:ring-2 focus:ring-[#f36c21]/15 transition-all" />
+      </div>
+    </div>
+
+    <div class="pt-3 border-t border-slate-100 flex justify-end gap-2">
+      <button type="button" onclick="closeEditModal()" class="px-4 py-2 border border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded text-xs font-bold transition-all cursor-pointer">Batal</button>
+      <button type="button" id="btn-simpan-bio" onclick="saveEdit()"
+        class="px-5 py-2 text-white font-bold rounded text-xs cursor-pointer transition-all disabled:cursor-progress">Simpan</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast" class="hidden fixed bottom-5 right-5 z-[70] w-72 bg-white border border-slate-200 rounded-xl shadow-2xl overflow-hidden">
+  <div class="flex items-start gap-3 p-4">
+    <div id="toast-icon" class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 text-white" style="background:linear-gradient(135deg,#c2410c 0%,#9a3412 100%)">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+    </div>
+    <div class="flex-1 min-w-0">
+      <p id="toast-title" class="text-xs font-black text-slate-900">Berhasil</p>
+      <p id="toast-desc" class="text-[11px] text-slate-500 mt-0.5 leading-relaxed">Perubahan berhasil disimpan.</p>
+    </div>
+  </div>
+  <div id="toast-bar" class="h-0.5" style="background:linear-gradient(90deg,#fb923c,#f36c21)"></div>
+</div>
+
+<!-- ============================================================
+     view-dashboard + modal + toast di atas diambil
+     oleh sso/tools/bangun-sso.mjs dengan irisan baris tetap. Baris
+     tepat di bawah ini adalah PENANDA AKHIRNYA.
+
+     Overlay sukses sudah DIHAPUS dari sini: alur bukti kini hidup di
+     dalam kartu modal sendiri (cap #bio-cap + keluar .modal-tutup),
+     bukan tirai layar-penuh terpisah.
+     ============================================================ -->
+<!-- AKHIR-POTONGAN-DASHBOARD (dibaca sso/tools/bangun-sso.mjs, jangan dihapus) -->
+<script>
+  /* ============================================================
+     SSO - perilaku nyata
+     ============================================================
+     Dua tampilan dalam satu dokumen: beranda lalu form.
+     Perpindahan antar tampilan tidak memindah halaman, jadi tombol
+     Kembali tidak merusak riwayat browser dan tidak ada kedipan
+     jaringan. Geraknya sepenuhnya di CSS (lihat blok reveal di head:
+     di head; JS hanya memindahkan class is-active.
+     ============================================================ */
+  var layar = 'welcome';
+  var sedangKirim = false;
+  var transisi = 0;
+  function byId(id) { return document.getElementById(id); }
+  var currentView = 'login';
+
+// Tukar layar DUA FASE BERGILIRAN: layar lama habis dulu, baru layar
+  // baru muncul. Tidak ada yang saling timpa.
+  //
+  // Fase 1: layar lama dipasang is-leaving (flap + blur, 640ms).
+  //   Layar baru masih display:none - tidak terlihat sama sekali.
+  // Fase 2 (setelah KELUAR_MS): is-leaving dilepas, is-active dipasang
+  //   ke layar baru, stagger-nya jalan.
+  function setLayar(next) {
+    if (layar === next) return;
+    var dariId = layar === 'form' ? 'screen-form' : 'screen-welcome';
+    var keId = next === 'form' ? 'screen-form' : 'screen-welcome';
+    layar = next;
+    var a = byId(dariId), b = byId(keId);
+    if (!a || !b) return;
+    var id = ++transisi;
+
+
+    // Hormati preferensi gerak dikurangi: tukar langsung. Menilai ini
+    // lebih penting daripada tampilannya.
+    var tenang = window.matchMedia
+      && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    if (tenang) {
+      a.classList.remove('is-active', 'is-leaving');
+      b.classList.add('is-active');
+      return;
+    }
+
+    // Kunci tinggi kolom selama fase 1. Layar keluar itu absolute
+    // (keluar dari aliran) dan layar baru display:none, jadi tanpa
+    // ini kolom kolaps dan halaman melompat selama iris berjalan.
+    var host = a.parentNode;
+    host.style.height = host.offsetHeight + 'px';
+
+    // Urutan penting. Lepas is-active dulu supaya display berubah ke
+    // none, lalu pasang is-leaving yang mengembalikannya ke block.
+    // Kalau dibalik, layar lama akan berkedip: hilang sebentar, muncul
+    // lagi, baru menutup.
+    a.classList.remove('is-active');
+    a.classList.add('is-leaving');
+
+    // Flap hilang terlama: delay 240 + durasi 400 = 640ms. Angka 700
+    // memberi sedikit ruang. Dihitung dari CSS, bukan ditebak - dan
+    // dijaga cek-reveal.mjs. Kalau kurang, flap terpotong display:none.
+    // Kalau meleset terlalu panjang, kolom kosong kelihatan.
+    var KELUAR_MS = 700;
+
+    setTimeout(function () {
+      if (id !== transisi) return;
+      a.classList.remove('is-leaving');
+      b.classList.add('is-active');
+      host.style.height = '';
+
+      // Fokus pindah ke kontrol pertama di layar baru. Di sini, bukan
+      // di awal: selama fase 1 layar baru masih display:none, fokus
+      // ke sana akan dibuang browser.
+      var fokus = b.querySelector('input, button');
+      if (fokus && document.activeElement !== document.body) fokus.focus();
+    }, KELUAR_MS);
+  }
+
+  function showFormMode() { setLayar('form'); }
+  function showWelcomeMode() { setLayar('welcome'); }
+
+  // Beranda ke form juga bisa langsung lewat #masuk.
+  if (location.hash === '#masuk') { showFormMode(); }
+
+  /* OAuth beneran. Tidak ada delay dan tidak ada toast palsuan.
+     Otorisasi terjadi di provider; kita hanya mengarahkan ke /oauth
+     yang membuat state acak, menukar kode, dan memasang cookie sesi. */
+  function socialLogin(provider) {
+    if (sedangKirim) return;
+    sedangKirim = true;
+    var btn = byId(provider === 'discord' ? 'btn-discord' : 'btn-google');
+    if (btn) {
+      btn.style.pointerEvents = 'none';
+      btn.style.opacity = '.7';
+      var lbl = btn.querySelector('[data-label]');
+      if (lbl) lbl.textContent = 'Mengalihkan';
+    }
+    location.href = '/oauth?provider=' + encodeURIComponent(provider);
+  }
+
+  /* Kalau cookie sesi sudah sah, jangan tampilkan form login lagi -
+     tampilkan dashboard. Endpoint /sesi hanya memvalidasi cookie milik
+     pengunjung itu sendiri; tidak membocorkan apa pun. */
+  function sudahPunyaSesi() {
+    return fetch('/sesi', { headers: { 'accept': 'application/json' } })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (d) { return d && d.ok === true; })
+      .catch(function () { return false; });
+  }
+  /* Tenggat kunci dashboard. Kartu profil ditahan sampai datanya benar-
+     benar siap, jadi tidak ada lagi kedipan "Tamu" lalu berubah nama.
+     Kalau sumbernya lambat, dashboard dibuka apa adanya - data asli tetap
+     masuk lewat .then() muatProfil saat jawabannya tiba. */
+  var BATAS_PROFIL_MS = 2500;
+  /* Jaring pengaman terakhir: kalau /sesi tidak pernah menjawab, tirai
+     tetap dibuka supaya pengunjung tidak terjebak di layar gelap. Nilai
+     ini juga batas atas kapan tirai boleh bertahan di kasus normal -
+     pengunjung tidak menatap logo lebih lama dari ini. */
+  var BATAS_GERBANG_MS = 3000;
+  /* Buka tirai boot (lihat css-boot.css). Idempoten: panggilan kedua dan
+     seterusnya tidak berpengaruh. */
+  function bukaTirai() {
+    document.documentElement.setAttribute('data-siap', '1');
+    /* Running text baru boleh diukur SEKARANG: view dashboard sudah
+       display:flex, jadi lebar wadahnya angka yang sebenarnya. Kalau
+       datanya belum datang, pasangMarquee() menolak dengan aman dan
+       dipanggil lagi oleh muatInfo() selesai. */
+    pasangMarquee();
+  }
+
+  /* Pengawas diam HUB: 30 menit tanpa aktivitas -> kembali ke tampilan
+     login (sesi server juga mati di titik ini). Aplikasi (member/tiket/
+     join) punya pengawas sendiri 15 menit yang melempar ke sini; hub
+     menerima kembali tanpa login selama sesinya hidup. Aktivitas di sini
+     juga menyentuh sesi via /sentuh (throttle 5 menit) supaya yang aktif
+     tidak ditendang. */
+  var HUB_DIAM_MS = 30 * 60 * 1000;
+  var HUB_SENTUH_JEDA_MS = 5 * 60 * 1000;
+  var hubDiamTimer = 0, hubSentuhTerakhir = 0;
+  function hubDiamReset() {
+    if (hubDiamTimer) window.clearTimeout(hubDiamTimer);
+    hubDiamTimer = window.setTimeout(function () { switchView("login"); }, HUB_DIAM_MS);
+    var kini = Date.now();
+    if (kini - hubSentuhTerakhir > HUB_SENTUH_JEDA_MS) {
+      hubSentuhTerakhir = kini;
+      try {
+        fetch('https://sso.railfurs.my.id/sentuh', { credentials: 'include' }).catch(function () {});
+      } catch (e) {}
+    }
+  }
+  ['mousemove', 'keydown', 'scroll', 'touchstart', 'click'].forEach(function (ev) {
+    window.addEventListener(ev, hubDiamReset, { passive: true });
+  });
+  hubDiamReset();
+
+  /* Ganti view: login <-> dashboard. */
+  function switchView(to) {
+    if (currentView === to) return;
+    currentView = to;
+    var dari = byId('view-' + (to === 'login' ? 'dashboard' : 'login'));
+    var ke = byId('view-' + (to === 'dashboard' ? 'dashboard' : 'login'));
+    if (!dari || !ke) return;
+    dari.classList.remove('is-active');
+    ke.classList.add('is-active');
+    window.scrollTo(0, 0);
+  }
+
+  /* Punya sesi -> dashboard, tidak ada sesi -> login. Tirai boot baru
+     dibuka setelah profil terisi, supaya kartu tidak sempat menampilkan
+     "Tamu" lalu berkedip ke data asli pada setiap refresh. */
+  function terapkanSesi(ada) {
+    switchView(ada ? 'dashboard' : 'login');
+    document.body.setAttribute('data-sesi', ada ? 'ada' : 'belum');
+    if (!ada) { bukaTirai(); return; }
+    muatInfo();
+    jamMulai();
+    jamAnalogMulai();
+    setTimeout(bukaTirai, BATAS_PROFIL_MS);
+    muatProfil().then(bukaTirai);
+  }
+
+  /* ---
+     Profil dashboard dari DATA, bukan dummy.
+     Sumber: member.railfurs.my.id/api/saya.php (butuh cookie sesi, ikut
+     otomatis karena same-site). Gagal fetch = placeholder, bukan data
+     karangan. Tidak ada lagi nama contoh di halaman ini.
+     */
+  /* tier: guest | member. Awalnya guest supaya cocok dengan kartu yang
+     memang tampil sebagai "Tamu" sebelum profil selesai dimuat. */
+  var PROF = { tier: 'guest', pendaftaran: 'kosong' };
+  var MATA_TERTUTUP = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
+  var MATA_TERBUKA = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="23" x2="23" y2="1"/></svg>';
+  function teks(id, v) {
+    var el = byId(id);
+    if (el) el.textContent = (v === null || v === undefined || v === "") ? "\u2014" : v;
+  }
+  function muatProfil() {
+    return fetch('https://member.railfurs.my.id/api/saya.php', { credentials: 'include' })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (d) {
+        if (!d || !d.ok) { tampilkanTamu(); return; }
+        /* Hanya tampilkan mode tamu kalau server MENYATAKAN belum terdaftar.
+           Kalau field-nya tidak ada (versi server lama), jangan menganggap
+           tamu: itu akan membuat semua anggota melihat mode tamu selama
+           backend belum ikut diperbarui. */
+        if (d.terdaftar === false) { tampilkanTamu(); return; }
+        /* tier + status pendaftaran ditentukan server (saya.php membaca
+           tab acc/pending/tolak/Pendaftaran/Guests): hanya baris di tab
+           acc yang verified/member. Backend lama tidak mengirim
+           d.pendaftaran: turunkan dari sumber supaya tidak mogok saat
+           server belum ikut diperbarui. */
+        var daf = d.pendaftaran || ((d.sumber === 'member') ? 'verified' : 'kosong');
+        PROF = {
+          tier: (d.sumber === 'member' && daf === 'verified') ? 'member' : 'guest',
+          pendaftaran: daf,
+          nama: d.nama || "",
+          nama: d.nama || "",
+          wa: d.whatsapp || "",
+          fursona: d.fursona || "",
+          umur: (d.umur === null || d.umur === undefined) ? "" : String(d.umur),
+          domisili: d.domisili || "",
+          sosmed: d.sosmed || "",
+          role: d.role || ""
+        };
+        terapkanMata();
+        /* Nama yang ditonjolkan = fursona (identitas komunitas). Nama asli
+           tetap ada di barisnya sendiri, tertutup tombol mata. Fursona
+           kosong -> jatuh ke nama asli supaya judul tidak jadi "\u2014". */
+        teks("db-nama", d.fursona || d.nama);
+        teks("db-nomor", d.nomor);
+        teks("db-fursona", d.fursona);
+        teks("db-domisili", d.domisili);
+        teks("db-status", d.status);
+        teks("greet-nama", d.fursona || d.nama);
+        teks("count-aktif", d.tiket_aktif);
+        teks("count-selesai", d.tiket_selesai);
+        terapkanLayanan();
+        var av = byId("avatar-img");
+        if (av) { if (d.foto) { av.setAttribute("src", d.foto); } else { av.removeAttribute("src"); } }
+      })
+      .catch(function () { tampilkanTamu(); });
+  }
+  /* ---
+     Kartu mode tamu: akun ini belum punya baris di tab Pendaftaran maupun
+     tab Guests. Sebelumnya keadaan ini menyisakan teks "Memuat..." di layar
+     selamanya, seolah ada data yang sedang diambil padahal memang tidak ada.
+     Sekarang tampil sebagai tamu: kolom berisi "\u2014", status "Tamu",
+     dan angka tiket nol. Begitu admin menambahkan barisnya di salah satu
+     tab, muat ulang halaman ini otomatis menampilkan data sungguhan.
+     */
+  function tampilkanTamu() {
+    PROF = { tier: 'guest', pendaftaran: 'kosong', nama: "", wa: "", fursona: "", umur: "", domisili: "", sosmed: "" };
+    terapkanLayanan();
+    teks("db-nama", "Tamu");
+    teks("db-nomor", "");
+    teks("db-fursona", "");
+    teks("db-domisili", "");
+    teks("db-status", "Tamu");
+    teks("greet-nama", "Tamu");
+    teks("count-aktif", 0);
+    teks("count-selesai", 0);
+    setMataKosong("nama", "db-nama-asli");
+    setMataKosong("wa", "db-wa");
+    var av = byId("avatar-img");
+    if (av) { av.removeAttribute("src"); }
+  }
+  /* Kolom kosong + mata disembunyikan. Titik-titik "data tersembunyi" akan
+     menyesatkan di sini: tidak ada data yang disembunyikan, memang kosong. */
+  function setMataKosong(kunci, id) {
+    var el = byId(id);
+    if (el) { el.textContent = "\u2014"; el.setAttribute("data-buka", "0"); }
+    var btn = document.querySelector('[data-eye="' + kunci + '"]');
+    if (btn) btn.style.display = "none";
+  }
+  /* Mata privasi: nama asli + whatsapp default TERTUTUP. */
+  function terapkanMata() {
+    pasangMata("nama", "db-nama-asli", PROF.nama);
+    pasangMata("wa", "db-wa", PROF.wa);
+  }
+  function pasangMata(kunci, id, nilaiAsli) {
+    var el = byId(id);
+    if (!el) return;
+    var terbuka = el.getAttribute("data-buka") === "1";
+    el.textContent = (terbuka && nilaiAsli) ? nilaiAsli : "\u2022\u2022\u2022\u2022\u2022\u2022";
+    var btn = document.querySelector('[data-eye="' + kunci + '"]');
+    /* display direset: setMataKosong() menyembunyikan tombol ini saat mode
+       tamu. Setelah biodata tersimpan, tombolnya harus muncul lagi. */
+    if (btn) { btn.style.display = ""; btn.innerHTML = terbuka ? MATA_TERBUKA : MATA_TERTUTUP; }
+  }
+  function toggleEye(kunci) {
+    var id = kunci === "wa" ? "db-wa" : "db-nama-asli";
+    var el = byId(id);
+    if (!el) return;
+    el.setAttribute("data-buka", el.getAttribute("data-buka") === "1" ? "0" : "1");
+    terapkanMata();
+  }
+  /* Pengumuman dari tab Informasi di spreadsheet (running text). */
+  /* Baris di tab Informasi boleh berbentuk "kunci: nilai" untuk mengisi
+     ornamen dashboard (contoh: "stasiun: SOLO"). HANYA kunci yang ada di
+     KUNCI_INFO yang dianggap konfigurasi - supaya pengumuman biasa yang
+     kebetulan mengandung titik dua ("Jadwal: Senin 20.00") tidak ikut
+     tertelan dari running text. */
+  var KUNCI_INFO = ["stasiun"];
+  function pisahKunci(teks) {
+    var satu = String(teks || "");
+    var pisah = satu.indexOf(":");
+    if (pisah <= 0) return null;
+    var kunci = satu.slice(0, pisah).trim().toLowerCase();
+    if (KUNCI_INFO.indexOf(kunci) < 0) return null;
+    var nilai = satu.slice(pisah + 1).trim();
+    if (!nilai) return null;
+    return { kunci: kunci, nilai: nilai };
+  }
+  function bacaKunci(daftar) {
+    var hasil = {};
+    for (var i = 0; i < daftar.length; i++) {
+      var satu = pisahKunci(daftar[i]);
+      if (satu) hasil[satu.kunci] = satu.nilai;
+    }
+    return hasil;
+  }
+  /* Nama stasiun di papan gantung banner. Sumbernya tab Informasi
+     (baris "stasiun: NAMA"), jadi bisa diganti tanpa edit kode. Panjang
+     dibatasi 16 karakter supaya tidak meluber dari papan. */
+  function pasangStasiun(nama) {
+    var el = byId("rs-stasiun");
+    if (!el) return;
+    var v = String(nama || "").trim().slice(0, 16);
+    el.textContent = v ? v.toUpperCase() : "SOLO";
+  }
+  var INFO_TEKS = null;
+  function muatInfo() {
+    fetch('https://member.railfurs.my.id/api/info.php')
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (d) {
+        if (!d || !d.ok || !d.items || !d.items.length) return;
+        var kunci = bacaKunci(d.items);
+        if (kunci.stasiun) pasangStasiun(kunci.stasiun);
+        /* Hanya baris yang BUKAN "kunci: nilai" yang jadi running text.
+           Baris kosong/sampah 1 huruf dibuang supaya tak ada jeda kosong. */
+        INFO_TEKS = d.items.filter(function (s) {
+          var t = String(s || '').trim();
+          if (!t || t.length < 2) return false;
+          return !pisahKunci(s);
+        });
+        if (!INFO_TEKS.length) {
+          /* Semua baris ternyata "kunci: nilai" (mis. hanya stasiun:).
+             Jangan biarkan tulisan "Memuat pengumuman..." menggantung. */
+          var trk = byId("info-track");
+          if (trk) {
+            while (trk.firstChild) trk.removeChild(trk.firstChild);
+            trk.style.animation = "none";
+            var s0 = document.createElement("span");
+            s0.className = "inline-block";
+            s0.textContent = "Belum ada pengumuman.";
+            trk.appendChild(s0);
+          }
+          return;
+        }
+        pasangMarquee();
+      })
+      .catch(function () { /* teks "Memuat pengumuman" bertahan */ });
+  }
+  /* ---
+     Pemasangan running text DIPISAH dari pengambilannya.
+     Kenapa dipisah: pengukuran lebar. Saat muatInfo() jalan, view
+     dashboard masih display:none - tirai boot baru dibuka setelah profil
+     terisi, dan html:not([data-siap]) .view.is-active menyembunyikannya
+     sampai saat itu. clientWidth elemen di dalam view tertutup = 0, jadi
+     "ulang" jatuh ke 1: satu potong teks pendek di wadah lebar
+     meninggalkan zona kosong permanen di kanan. "Ada gap panjang" itu
+     yang terlihat, bukan animasinya yang salah.
+     Jadi: selama tirai masih menutup, pasangMarquee() tidak mengukur
+     apa pun, dan dipanggil lagi dari bukaTirai().
+     */
+  function pasangMarquee() {
+    if (!INFO_TEKS || !INFO_TEKS.length) return;
+    if (document.documentElement.getAttribute("data-siap") !== "1") return;
+    var track = byId("info-track");
+    if (!track) return;
+    while (track.firstChild) track.removeChild(track.firstChild);
+    /* Animasi dimatikan selama membangun. Menyetel animationDuration di
+       animasi yang sedang jalan membuatnya melompat ke posisi baru - itu
+       sumber teks "ngadet-ngadet" saat tirai dibuka: durasi 28s bawaan
+       CSS sudah jalan sejak load, lalu ditukar ketika data datang. */
+    track.style.animation = "none";
+    /* Satu paruh = tiap pengumuman + pemisah, termasuk pemisah SESUDAH
+       yang terakhir. Dulu paruh diberi padding-right 48px DAN pemisah,
+       jadi tiap sambungan putaran tampak satu celah panjang (itulah "gap
+       kosong" yang terlihat). Sekarang jarak antar pengumuman seragam:
+       pemisah yang sama dipakai di dalam maupun di sambungan. */
+    var SEP = "   |   ";
+    var gabung = "";
+    for (var n = 0; n < INFO_TEKS.length; n++) gabung += INFO_TEKS[n] + SEP;
+    /* Satu paruh harus lebih lebar dari wadahnya. Tiap paruh diulang
+       sampai memenuhi (diukur beneran, bukan tebakan jumlah), lalu
+       durasi diskalakan supaya kecepatan baca tetap ~55px/detik -
+       paruh panjang tidak boleh meleset. */
+    var wadah = track.parentNode;
+    var lebarWadah = (wadah && wadah.clientWidth) || 0;
+    var probe = document.createElement("span");
+    probe.className = "inline-block";
+    probe.style.visibility = "hidden";
+    probe.textContent = gabung;
+    track.appendChild(probe);
+    var lebarSatu = probe.offsetWidth || 0;
+    track.removeChild(probe);
+    var ulang = 1;
+    if (lebarSatu > 0 && lebarWadah > 0) {
+      ulang = Math.min(8, Math.max(1, Math.ceil((lebarWadah + 1) / lebarSatu)));
+    }
+    var isiParuh = "";
+    for (var k = 0; k < ulang; k++) isiParuh += gabung;
+    for (var i = 0; i < 2; i++) {
+      var s = document.createElement("span");
+      s.className = "inline-block";
+      if (i === 1) s.setAttribute("aria-hidden", "true");
+      s.textContent = isiParuh;
+      track.appendChild(s);
+    }
+    try {
+      var lebarParuh = (track.firstChild && track.firstChild.offsetWidth) || 0;
+      if (lebarParuh > 0 && lebarParuh >= lebarWadah) {
+        var detik = Math.min(60, Math.max(14, Math.round(lebarParuh / 55)));
+        track.style.animationDuration = detik + "s";
+        /* Reflow paksa supaya durasi baru benar-benar dipakai, baru
+           animasi dinyalakan dari nol. Tidak ada lompatan dari posisi
+           lama karena tidak ada "posisi lama". */
+        void track.offsetWidth;
+        track.style.animation = "";
+      } else {
+        /* Wadah lebih lebar dari teksnya: biarkan diam. Nilai 0 dari
+           wadah tertutup juga jatuh ke sini. */
+        track.style.animation = "none";
+      }
+    } catch (e) {}
+  }
+  /* Ukuran ulang saat jendela berubah: teks yang tadinya cukup lebar bisa
+     jadi kurang setelah layar dipersempit (dan sebaliknya). Tanpa ini,
+     satu kali resize meninggalkan gap sampai halaman dimuat ulang. */
+  var marqueeTimer = 0;
+  function marqueeResize() {
+    if (marqueeTimer) window.clearTimeout(marqueeTimer);
+    marqueeTimer = window.setTimeout(pasangMarquee, 200);
+  }
+  if (window.addEventListener) window.addEventListener("resize", marqueeResize);
+  /* ---
+     Jam analog peron: mengikuti waktu NYATA.
+     Sebelumnya tiga jarumnya diam di posisi 12 karena skrip prototipe
+     tidak ikut dipindahkan ke builder - jam digital di atasnya bergerak,
+     jarumnya tidak. Sekarang jarum digerakkan dari Date() yang sama.
+
+     Rotasi memakai atribut transform SVG (rotate(deg cx cy)), bukan CSS
+     transform: tidak bergantung pada transform-box dan tidak menambah
+     aturan animation di CSS (aturan proyek melarang itu).
+
+     Detak per detik, bukan requestAnimationFrame: jarum detik yang halus
+     butuh loop 60 fps yang jalan terus-menerus - persis "gerak abadi"
+     yang dilarang di halaman ini. Jam dinding quartz juga berdetak.
+     */
+  var JAM_CX = 761, JAM_CY = 78;
+  var jamDetikTimer = null;
+  function setJarum(el, derajat) {
+    if (el) el.setAttribute("transform", "rotate(" + derajat.toFixed(2) + " " + JAM_CX + " " + JAM_CY + ")");
+  }
+  function gambarJam() {
+    var d = new Date();
+    var detik = d.getSeconds();
+    var menit = d.getMinutes() + detik / 60;
+    var jam12 = (d.getHours() % 12) + menit / 60;
+    setJarum(byId("rs-h"), jam12 * 30);
+    setJarum(byId("rs-m"), menit * 6);
+    setJarum(byId("rs-s"), detik * 6);
+  }
+  function jamAnalogMulai() {
+    if (jamDetikTimer !== null) return;
+    gambarJam();
+    jamDetikTimer = window.setInterval(gambarJam, 1000);
+  }
+  /* Jam + sapaan hidup (pengganti tanggal statis). */
+  var jamTimer = null;
+  function jamMulai() {
+    if (jamTimer) return;
+    var tulis = function () {
+      var now = new Date();
+      var hari = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"][now.getDay()];
+      var bulan = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"][now.getMonth()];
+      var p = function (x) { return (x < 10 ? "0" : "") + x; };
+      teks("clock", hari + ", " + p(now.getDate()) + " " + bulan + " " + now.getFullYear() + ", " + p(now.getHours()) + "." + p(now.getMinutes()) + "." + p(now.getSeconds()));
+      var h = now.getHours();
+      teks("greeting", h < 11 ? "Selamat Pagi" : (h < 15 ? "Selamat Siang" : (h < 18 ? "Selamat Sore" : "Selamat Malam")));
+    };
+    tulis();
+    jamTimer = window.setInterval(tulis, 1000);
+  }
+
+  /* Layanan per tier + status pendaftaran (4 keadaan): verified ->
+     [dashboard, tiket]; menunggu/ditolak/kosong -> [tiket, join].
+     Kartu join punya 3 mode (aturKartuJoin): buka = form aktif;
+     menunggu = berkas diterima, sidang belum putus; tolak = hubungi
+     admin. Mode non-buka tidak navigasi: kliknya menjelaskan status
+     via toast, bukan menabrak tembok 409 di server.
+     Kartu yang bukan haknya DISEMBUNYIKAN (display:none via .hidden),
+     bukan digelapkan: yang disembunyikan tidak bisa diklik, di-tab,
+     atau dibaca pembaca layar. Dipanggil setiap tier diketahui -
+     termasuk tamu yang belum punya baris (tampilkanTamu). Sebelum
+     tier diketahui tirai boot masih menutup layar, jadi tidak ada
+     kedipan kartu yang salah. */
+  var JOIN_MODE = "buka";
+  function aturKartuJoin(mode) {
+    JOIN_MODE = mode;
+    var badge = byId('join-badge');
+    var desc = byId('join-desc');
+    if (mode === 'menunggu') {
+      if (badge) badge.textContent = 'MENUNGGU';
+      if (desc) desc.textContent = 'Berkas diterima. Menunggu verifikasi.';
+    } else if (mode === 'tolak') {
+      if (badge) badge.textContent = 'DITOLAK';
+      if (desc) desc.textContent = 'Pendaftaran ditolak - hubungi admin';
+    } else {
+      if (badge) badge.textContent = 'PENDAFTARAN';
+      if (desc) desc.textContent = 'Jadi Anggota IRS & Verifikasi KTA';
+    }
+  }
+  /* ---
+     Kertas kartu member mengikuti PERAN, bukan hanya anggapan anggota.
+     Diletakkan di samping aturStripAnggota() karena dipanggil dari
+     tempat yang sama (terapkanLayanan).
+     */
+  function isAdmin() { return (PROF && PROF.role) === "admin"; }
+  function aturKartuPeran() {
+    /* Tanpa role di PROF (backend lama / belum dimuat), jangan menebak:
+       tampilkan Member - penulisan default yang aman. Menuliskan ADMIN
+       tanpa dasar berarti memberi label wewenang yang tidak dimiliki. */
+    var admin = isAdmin();
+    var judul = byId("member-title");
+    var lencana = byId("member-badge");
+    var desk = byId("member-desc");
+    if (judul) judul.textContent = admin ? "Admin" : "Member";
+    if (lencana) lencana.textContent = admin ? "KENDALI" : "KTA";
+    if (desk) desk.textContent = admin
+      ? "Sidang, Anggota & Seluruh Data IRS"
+      : "Area Anggota, KTA Digital & Manajemen Profil";
+  }
+  /* ---
+     Strip "biodata tiket sudah terisi, belum jadi anggota".
+     Dipisah dari terapkanLayanan() karena syaratnya beda: yang satu
+     soal tier, yang ini soal sejauh mana orang sudah menempuh jalan.
+     Keduanya dipanggil dari tempat yang sama (lihat terapkanLayanan).
+     */
+  function aturStripAnggota() {
+    var s = byId("strip-belum-anggota");
+    if (!s) return;
+    /* isTamu() + PROF dibuat bersama oleh pemanggil. Kalau PROF belum
+       ada (pemanggilan terlalu awal), biarkan strip tersembunyi:
+       menampilkannya tanpa data sama dengan menebak. */
+    if (typeof PROF === "undefined" || !PROF) return;
+    var tampil = isTamu() && !!PROF.nama && (PROF.pendaftaran || "kosong") === "kosong";
+    s.classList.toggle("hidden", !tampil);
+  }
+  function terapkanLayanan() {
+    var tamu = isTamu();
+    var cm = byId('card-member');
+    var cj = byId('card-join');
+    if (cm) cm.classList.toggle('hidden', tamu);
+    if (cj) cj.classList.toggle('hidden', !tamu);
+    /* Lencana kartu tiket ikut tier: tamu melihat FOR GUEST, anggota
+       melihat RESERVASI. Portal tiket di belakangnya memang sudah
+       adaptif per kind (profil + boleh-beli), jadi yang dibedakan di
+       sini hanya labelnya - bukan alurnya. */
+    var tb = byId('ticket-badge');
+    var td = byId('ticket-desc');
+    if (!tamu) {
+      if (tb) tb.textContent = 'RESERVASI';
+      if (td) td.textContent = 'Reservasi kursi Joyride CTC';
+    } else {
+      /* 'FOR GUEST' dibaca orang sebagai 'khusus tamu' - padahal anggota
+         juga membeli tiket, dan label itu membuat mereka melewatinya.
+         Sekarang lencananya menyebut jalurnya, bukan siapa yang boleh
+         memakainya; itu tugas baris .card-untuk di bawahnya. */
+      if (tb) tb.textContent = 'TIKET';
+      if (td) td.textContent = 'Reservasi kursi Joyride CTC';
+    }
+    /* Petunjuk 'untuk tiket' + ajakan mendaftar hanya relevan untuk tamu.
+       Anggota sudah jadi anggota; kalimat itu cuma menambah bacaan tak
+       berguna di tempat yang paling sering dibuka. */
+    var pet = byId("bio-petunjuk");
+    if (pet) pet.classList.toggle("hidden", !tamu);
+    /* Strip 'biodata sudah terisi tapi belum jadi anggota' hanya untuk
+       kasus yang paling sering diam-diam berhenti: biodata tiket sudah
+       lengkap, orang menganggap prosesnya selesai, padahal barisnya ada
+       di tab Guests yang tidak pernah dibaca meja sidang.
+       - bukan tamu -> tidak relevan (sudah bisa masuk dashboard).
+       - nama kosong -> belum isi apa pun; yang perlu dikatakan sudah
+         dikatakan kartu JOIN, strip ini hanya akan mengulang.
+       - pendaftaran bukan 'kosong' -> sudah pernah mengirim berkas;
+         keadaan menunggu/ditolak sudah punya kartunya sendiri. */
+    aturStripAnggota();
+    /* Kartu member menyebut PERANNYA: ADMIN atau MEMBER. Sebelumnya
+       selalu "Member" walau orangnya admin, sehingga halaman sidang +
+       seluruh data IRS - yang hanya admin punya - tidak tampak punya
+       tempat sendiri dan tetap terbaca seperti KTA seperti semua orang.
+       Badge 'KENDALI' dipakai (bukan 'ADMIN') karena lencana kartunya
+       sempit; 'kendali' tetap terbaca sebagai wewenang. */
+    aturKartuPeran();
+    if (!tamu) return;
+    var daf = PROF.pendaftaran || 'kosong';
+    aturKartuJoin(daf === 'pending' ? 'menunggu' : (daf === 'rejected' ? 'tolak' : 'buka'));
+  }
+  /* Pergi ke aplikasi lain: tombol, bukan redirect otomatis. */
+  function goMember() { location.href = 'https://member.railfurs.my.id/dashboard.php'; }
+  function goTicket() { location.href = 'https://ticket.railfurs.my.id/'; }
+  /* Join: sementara ke situs pendaftaran yang sudah ada. Nanti form
+     join pindah ke dalam portal ini sebagai view sendiri; saat itu
+     cukup ganti satu baris ini tanpa menyentuh kartu. */
+  function goJoin() {
+    if (JOIN_MODE === 'menunggu') { toast('Sedang ditinjau', 'Berkas sudah diterima. Menunggu verifikasi.'); return; }
+    if (JOIN_MODE === 'tolak') { toast('Pendaftaran ditolak', 'Hubungi admin IRS untuk banding.'); return; }
+    location.href = 'https://join.railfurs.my.id/';
+  }
+
+  /* Keluar: hapus cookie sesi di server, lalu kembali ke form login. */
+  function confirmLogout() {
+    location.href = '/logout';
+  }
+
+  /* Toast. Satu fungsi kecil, dipakai semua pesan di halaman ini. */
+  var toastTimer;
+  function toast(title, desc) {
+    var t = byId('toast');
+    if (!t) { window.alert(title + (desc ? '\n\n' + desc : '')); return; }
+    byId('toast-title').textContent = title;
+    byId('toast-desc').textContent = desc || '';
+    t.classList.remove('hidden');
+    window.clearTimeout(toastTimer);
+    toastTimer = window.setTimeout(function () { t.classList.add('hidden'); }, 4000);
+  }
+
+  /* ---
+   Unggah foto profil (modal foto) ---
+   
+   Modal ini masih prototipe: preset avatar dan unggah langsung belum
+   punya backend. Yang menyimpannya hanya jalur di dalam edit-modal
+   (openEditModal('avatar')), dan itu WAJIB memakai POST yang sama dengan
+   biodata tamu, bukan toast palsu.
+   */
+  function belumAda(apa) {
+    toast('Belum tersedia', apa + ' belum dibuka.');
+  }
+
+  function openPhotoModal() {
+    var m = byId('photo-modal');
+    if (m) { m.classList.remove('hidden'); }
+    else { belumAda('Unggah foto'); }
+  }
+  function closePhotoModal() {
+    var m = byId('photo-modal');
+    if (m) m.classList.add('hidden');
+  }
+  function applyPhotoUrl() { belumAda('Simpan foto profil'); }
+  function clearPhoto() { belumAda('Hapus foto profil'); }
+
+  function openEditModal(mode) {
+    var m = byId('edit-modal');
+    if (!m) { belumAda('Edit profil'); return; }
+    /* Semua penyuntingan profil dari portal SSO ini untuk TAMU. Anggota
+       mengubah biodatanya lewat dashboard.php; tanpa penjagaan ini, tombol
+       yang sama akan menulis ke tab Guests untuk anggota juga. */
+    if (!isTamu()) { location.href = 'https://member.railfurs.my.id/dashboard.php'; return; }
+    m.classList.remove('modal-tutup');
+    var bio = byId('edit-biodata');
+    var ava = byId('edit-avatar');
+    var pas = byId('edit-password');
+    if (bio) bio.classList.toggle('hidden', mode !== 'biodata');
+    if (ava) ava.classList.toggle('hidden', mode !== 'avatar' && mode !== 'foto');
+    if (pas) pas.classList.add('hidden');
+    var pre = byId('edit-presets');
+    if (pre) pre.classList.add('hidden');
+    var pres = byId('edit-presets-sep');
+    if (pres) pres.classList.add('hidden');
+    var judul = byId('edit-title');
+    if (judul) judul.textContent = (mode === 'biodata') ? 'Biodata Tiket' : 'Ganti Avatar';
+    if (mode === 'biodata') { isiBiodata(); }
+    /* Tombol Simpan dikembalikan ke keadaan diam setiap modal dibuka.
+       Tanpa ini, sisa keadaan "Gagal" dari percobaan sebelumnya masih
+       menempel di tombol saat modal dibuka lagi. */
+    tombolSimpanSet('diam');
+    var cap = byId('bio-cap');
+    if (cap) { cap.classList.add('hidden'); cap.classList.remove('flex', 'cap-masuk'); }
+    m.classList.remove('modal-tutup');
+    m.classList.remove('hidden');
+  }
+  function closeEditModal(seketika) {
+    var m = byId('edit-modal');
+    if (!m || m.classList.contains('hidden')) return;
+    if (seketika) {
+      m.classList.remove('modal-tutup');
+      m.classList.add('hidden');
+      return;
+    }
+    m.classList.add('modal-tutup');
+    window.setTimeout(function () {
+      m.classList.remove('modal-tutup');
+      m.classList.add('hidden');
+    }, 240);
+  }
+  /* ---
+     Biodata tamu.
+     Hanya tamu: anggota punya dashboard.php yang mengurus tab Pendaftaran,
+     dan dua jalur tulis untuk hal yang sama akan menghasilkan aturan yang
+     berbeda-beda. Datanya ditulis ke tab Guests lewat member.railfurs.my.id.
+     */
+  function isTamu() { return PROF.tier === 'guest'; }
+  function nilai(id) { var el = byId(id); return el ? el.value : ''; }
+  function isiBiodata() {
+    if (byId('bio-nama')) byId('bio-nama').value = PROF.nama || '';
+    if (byId('bio-fursona')) byId('bio-fursona').value = PROF.fursona || '';
+    if (byId('bio-umur')) byId('bio-umur').value = PROF.umur || '';
+    if (byId('bio-domisili')) byId('bio-domisili').value = PROF.domisili || '';
+    if (byId('bio-wa')) byId('bio-wa').value = PROF.wa || '';
+    if (byId('bio-sosmed')) byId('bio-sosmed').value = PROF.sosmed || '';
+  }
+  function editBiodata() { openEditModal('biodata'); }
+  function saveEdit() {
+    var bio = byId('edit-biodata');
+    if (bio && !bio.classList.contains('hidden')) { simpanBiodata(); return; }
+    simpanAvatar();
+  }
+  function simpanBiodata() {
+    var nama = String(nilai('bio-nama')).trim();
+    if (!nama) { toast('Nama belum diisi', 'Nama asli wajib diisi sebelum disimpan.'); return; }
+    var umur = String(nilai('bio-umur')).trim();
+    if (umur !== '' && !/^[0-9]{1,2}$/.test(umur)) { toast('Umur tidak valid', 'Isi angka 13-99, atau kosongkan.'); return; }
+    kirimProfil({
+      action: 'simpan_biodata',
+      nama_asli: nama,
+      fursona: String(nilai('bio-fursona')).trim(),
+      umur: umur,
+      domisili: String(nilai('bio-domisili')).trim(),
+      whatsapp: String(nilai('bio-wa')).trim(),
+      sosmed: String(nilai('bio-sosmed')).trim()
+    }, 'Biodata tersimpan');
+  }
+  function simpanAvatar() {
+    var inp = byId('edit-file');
+    var file = inp && inp.files && inp.files[0];
+    if (!file) { toast('Belum ada berkas', 'Pilih foto dulu sebelum menyimpan.'); return; }
+    unggahFoto(file).then(function (hasil) {
+      if (!hasil) return;
+      kirimProfil({ action: 'simpan_foto', foto_url: hasil.url, foto_delete_url: hasil.hapus }, 'Avatar tersimpan');
+    });
+  }
+  var IMGBB_KEY = 'GANTI_DENGAN_API_KEY_IMGBB_ANDA';
+  function unggahFoto(file) {
+    var fd = new FormData();
+    fd.append('image', file);
+    return fetch('https://api.imgbb.com/1/upload?key=' + IMGBB_KEY, { method: 'POST', body: fd })
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        if (!d || !d.success || !d.data || !d.data.url) {
+          toast('Unggah gagal', 'Coba ganti koneksi lalu ulangi.');
+          return null;
+        }
+        return { url: d.data.url, hapus: d.data.delete_url || '' };
+      })
+      .catch(function () { toast('Unggah gagal', 'Tidak bisa menghubungi layanan gambar.'); return null; });
+  }
+  function kirimProfil(payload, judulSukses) {
+    tombolSimpanSet('kirim');
+    fetch('https://member.railfurs.my.id/api/profil-tamu.php', {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    })
+      .then(function (r) { return r.json().then(function (d) { return { status: r.status, d: d }; }); })
+      .then(function (res) {
+        if (res.status !== 200 || !res.d || res.d.ok !== true) {
+          tombolSimpanSet('tolak');
+          toast('Gagal menyimpan', (res.d && res.d.error) ? String(res.d.error) : 'Coba lagi sebentar lagi.');
+          return;
+        }
+        terapkanProfilLokal(payload);
+        tombolSimpanSet('cap');
+        /* Cap menancap di sudut kartu sebagai bukti - bukan tirai
+           layar-penuh. Setelah 750 ms kartu meluruh (.modal-tutup,
+           240 ms), lalu toast tampil di dashboard. */
+        var capEl = byId('bio-cap');
+        if (capEl) { capEl.classList.remove('hidden'); capEl.classList.add('flex', 'cap-masuk'); }
+        window.setTimeout(function () {
+          closeEditModal();
+          window.setTimeout(function () {
+            tombolSimpanSet('diam');
+            toast(judulSukses, 'Perubahan sudah tersimpan.');
+          }, 240);
+        }, 750);
+      })
+      .catch(function () {
+        tombolSimpanSet('tolak');
+        toast('Gagal menyimpan', 'Tidak bisa menghubungi server profil.');
+      });
+  }
+  /* Empat keadaan tombol simpan: diam | kirim | cap | tolak.
+     Sistem baru: garis rel (kirim), stempel hijau (cap), sentakan
+     miring (tolak). Teks polos via textContent - tidak ada SVG
+     inline di JS. */
+  var SIMPAN_MODE = null;
+  var SIMPAN_TEKS = null;
+  function tombolSimpanSet(mode) {
+    var btn = byId('btn-simpan-bio');
+    if (!btn) return;
+    if (SIMPAN_TEKS === null) SIMPAN_TEKS = (btn.textContent || 'Simpan').trim();
+    if (SIMPAN_MODE === mode) return;
+    SIMPAN_MODE = mode;
+    btn.classList.remove('is-kirim', 'is-cap', 'is-tolak');
+    btn.removeAttribute('aria-busy');
+    /* Tombol tetap terkunci selama 'kirim' DAN 'cap'. Waktu cap, kartu
+       masih tampil ~1 detik sebelum meluruh; kalau tombol sudah bisa
+       diklik lagi di jeda itu, satu biodata bisa terkirim dua kali.
+       Baru 'diam' dan 'tolak' yang membuka kunci. */
+    btn.disabled = (mode === 'kirim' || mode === 'cap');
+    if (mode === 'diam') {
+      btn.textContent = SIMPAN_TEKS;
+    } else if (mode === 'kirim') {
+      btn.textContent = 'Mengirim...';
+      btn.classList.add('is-kirim');
+      btn.setAttribute('aria-busy', 'true');
+    } else if (mode === 'cap') {
+      btn.textContent = 'Tercatat';
+      btn.classList.add('is-cap');
+    } else {
+      btn.textContent = 'Gagal';
+      btn.classList.add('is-tolak');
+    }
+  }
+  function terapkanProfilLokal(payload) {
+    if (payload.action === 'simpan_biodata') {
+      PROF.nama = payload.nama_asli;
+      PROF.fursona = payload.fursona;
+      PROF.umur = payload.umur;
+      PROF.domisili = payload.domisili;
+      PROF.wa = payload.whatsapp;
+      PROF.sosmed = payload.sosmed;
+      teks('db-nama', PROF.fursona || PROF.nama);
+      teks('db-fursona', PROF.fursona);
+      teks('db-domisili', PROF.domisili);
+      terapkanMata();
+      return;
+    }
+    if (payload.action === 'simpan_foto') {
+      var img = byId('avatar-img');
+      if (img) {
+        if (payload.foto_url) { img.setAttribute('src', payload.foto_url); }
+        else { img.removeAttribute('src'); }
+      }
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', function () {
+    var brand = byId('brand-btn');
+    if (brand) {
+      brand.addEventListener('click', function () {
+        location.href = 'https://sso.railfurs.my.id/';
+      });
+    }
+    if (typeof terapkanMata === 'function') { try { terapkanMata(); } catch (e) {} }
+    /* Escape menutup modal edit dengan animasi keluar. Tanpa ini,
+       pengguna keyboard terjebak di dalam modal biodata. */
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') closeEditModal();
+    });
+    /* Jaring pengaman: apa pun yang terjadi pada pemeriksaan sesi, tirai
+       tidak boleh tinggal menutup layar selamanya. */
+    setTimeout(bukaTirai, BATAS_GERBANG_MS);
+    sudahPunyaSesi().then(terapkanSesi);
+  });
+
+</script>
+</body>
+</html>
