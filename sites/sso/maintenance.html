@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="robots" content="noindex, nofollow" />
+<title>Segera kembali — Indonesian Railfurs SSO</title>
+<link rel="icon" type="image/webp" href="images/logo.webp" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;900&family=Chakra+Petch:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --ink: #fff6ee;
+    --soft: #f5d6bf;
+    --amber: #ffb36b;
+    --display: "Big Shoulders Display", Impact, "Arial Narrow", sans-serif;
+    --text: "Chakra Petch", "Trebuchet MS", system-ui, sans-serif;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; overflow: hidden; background: #0b0612; }
+  body {
+    font: 15px/1.6 var(--text);
+    color: var(--ink);
+  }
+
+  /* scene + intro */
+  .scene {
+    position: fixed; inset: 0;
+    animation: sceneIn 1.8s ease both;
+  }
+  .scene svg { width: 100%; height: 100%; display: block; }
+  @keyframes sceneIn { from { opacity: 0; } to { opacity: 1; } }
+
+  .vignette {
+    position: fixed; inset: 0; pointer-events: none;
+    background: radial-gradient(ellipse at 50% 40%, transparent 50%, rgba(5, 2, 10, .5) 100%);
+  }
+
+  /* ambient loops */
+  .star     { animation: twinkle 4.5s ease-in-out infinite; }
+  .glow     { animation: breathe 9s ease-in-out infinite; }
+  .dusk     { animation: dusk 36s ease-in-out infinite alternate; }
+  .cloud    { animation: drift 70s ease-in-out infinite alternate; }
+  .cloud.b  { animation-duration: 95s; animation-direction: alternate-reverse; }
+  .fog      { animation: drift 60s ease-in-out infinite alternate; }
+  .fog.b    { animation-duration: 84s; animation-direction: alternate-reverse; }
+  .lamp     { animation: blink 2.4s ease-in-out infinite; }
+  .lamp.alt { animation-delay: 1.2s; }
+
+  .bird       { animation: fly 48s linear infinite; }
+  .bird.b2    { animation-duration: 56s; animation-delay: -18s; }
+  .bird.b3    { animation-duration: 64s; animation-delay: -34s; }
+  .bird path  { animation: flap 1s ease-in-out infinite alternate; transform-box: fill-box; transform-origin: 50% 100%; }
+
+  @keyframes twinkle { 0%, 100% { opacity: .85; } 50% { opacity: .2; } }
+  @keyframes breathe { 0%, 100% { opacity: .75; } 50% { opacity: 1; } }
+  @keyframes dusk    { from { opacity: 0; } to { opacity: .45; } }
+  @keyframes drift   { from { transform: translateX(-140px); } to { transform: translateX(140px); } }
+  @keyframes blink   { 0%, 100% { opacity: 1; } 50% { opacity: .25; } }
+  @keyframes fly     { from { transform: translateX(-60px); } to { transform: translateX(1720px); } }
+  @keyframes flap    { from { transform: scaleY(1); } to { transform: scaleY(.35); } }
+
+  /* logo */
+  .logo {
+    position: fixed; top: 24px; left: 28px; z-index: 2;
+    height: 30px; width: auto; opacity: .92;
+  }
+
+  /* content */
+  .content {
+    position: fixed; left: 0; right: 0; top: 13vh; z-index: 2;
+    text-align: center; padding: 0 24px;
+  }
+  h1 {
+    font-family: var(--display);
+    font-weight: 900;
+    font-size: clamp(60px, 11vw, 140px);
+    line-height: .86;
+    text-transform: uppercase;
+    color: #fff;
+  }
+  h1 .ol {
+    display: block;
+    color: transparent;
+    -webkit-text-stroke: 2px var(--amber);
+  }
+  .sub {
+    margin-top: 20px;
+    font-family: var(--text);
+    font-size: clamp(18px, 2.4vw, 26px); font-weight: 500;
+    color: #ffe3c4;
+    text-shadow: 0 2px 18px rgba(11, 6, 18, .55);
+  }
+  .note {
+    margin: 28px auto 0; max-width: 44ch;
+    font-size: 13px; color: var(--soft); opacity: .85;
+  }
+  .note b { color: var(--ink); font-weight: 500; }
+
+  /* one entrance, bertahap */
+  .rise { animation: rise 1.1s cubic-bezier(.2, .7, .2, 1) both; }
+  .d1 { animation-delay: .5s; }
+  .d2 { animation-delay: .7s; }
+  .d3 { animation-delay: .9s; }
+
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: none; }
+  }
+
+  @media (max-width: 480px) {
+    .logo { top: 18px; left: 18px; }
+    .content { top: 14vh; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; }
+    .scene { opacity: 1; }
+  }
+</style>
+</head>
+<body>
+
+  <div class="scene" aria-hidden="true">
+    <svg viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice">
+      <defs>
+        <linearGradient id="sky" x1="0" y1="0" x2="0" y2="600" gradientUnits="userSpaceOnUse">
+          <stop offset="0"   stop-color="#0d0820"/>
+          <stop offset=".3"  stop-color="#2a1236"/>
+          <stop offset=".55" stop-color="#6b1f57"/>
+          <stop offset=".78" stop-color="#d4493b"/>
+          <stop offset=".92" stop-color="#f36c21"/>
+          <stop offset="1"   stop-color="#ffb36b"/>
+        </linearGradient>
+        <linearGradient id="dusk" x1="0" y1="0" x2="0" y2="600" gradientUnits="userSpaceOnUse">
+          <stop offset="0"  stop-color="#120a24"/>
+          <stop offset="1"  stop-color="#4a1545"/>
+        </linearGradient>
+        <linearGradient id="ground" x1="0" y1="600" x2="0" y2="900" gradientUnits="userSpaceOnUse">
+          <stop offset="0"  stop-color="#3a1640"/>
+          <stop offset=".3" stop-color="#1a0b22"/>
+          <stop offset="1"  stop-color="#07040c"/>
+        </linearGradient>
+        <radialGradient id="horizonGlow">
+          <stop offset="0"  stop-color="#ffd9ad" stop-opacity=".9"/>
+          <stop offset=".4" stop-color="#ff9a5c" stop-opacity=".35"/>
+          <stop offset="1"  stop-color="#ff9a5c" stop-opacity="0"/>
+        </radialGradient>
+        <linearGradient id="cloud" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0"  stop-color="#8a3a6e" stop-opacity=".55"/>
+          <stop offset=".6" stop-color="#e9735a" stop-opacity=".5"/>
+          <stop offset="1"  stop-color="#ffb36b" stop-opacity=".85"/>
+        </linearGradient>
+        <linearGradient id="rail" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#c79aaf"/>
+          <stop offset="1" stop-color="#7a5366"/>
+        </linearGradient>
+        <filter id="soft" x="-20%" y="-80%" width="140%" height="260%">
+          <feGaussianBlur stdDeviation="8"/>
+        </filter>
+        <filter id="glowLine" x="-10%" y="-100%" width="120%" height="300%">
+          <feGaussianBlur stdDeviation="3"/>
+        </filter>
+        <pattern id="haz" width="22" height="22" patternUnits="userSpaceOnUse" patternTransform="rotate(-30)">
+          <rect width="11" height="22" fill="#f36c21"/>
+          <rect x="11" width="11" height="22" fill="#1a0b22"/>
+        </pattern>
+        <path id="frond" d="M0 0 C 25 -24 62 -24 92 6 C 62 -8 30 -4 0 0 Z"/>
+      </defs>
+
+      <!-- langit & tanah -->
+      <rect x="-120" y="0" width="1840" height="600" fill="url(#sky)"/>
+      <rect class="dusk" x="-120" y="0" width="1840" height="600" fill="url(#dusk)"/>
+      <rect x="-120" y="600" width="1840" height="300" fill="url(#ground)"/>
+
+      <!-- bintang -->
+      <g fill="#fff6ee">
+        <circle class="star" cx="120"  cy="80"  r="1.6" style="animation-delay:0s"/>
+        <circle class="star" cx="340"  cy="60"  r="1.8" style="animation-delay:-2.2s"/>
+        <circle class="star" cx="590"  cy="40"  r="1.5" style="animation-delay:-3s"/>
+        <circle class="star" cx="820"  cy="70"  r="1.7" style="animation-delay:-2.6s"/>
+        <circle class="star" cx="1080" cy="50"  r="1.6" style="animation-delay:-1.9s"/>
+        <circle class="star" cx="1320" cy="90"  r="1.8" style="animation-delay:-.9s"/>
+        <circle class="star" cx="1440" cy="40"  r="1.2" style="animation-delay:-2.4s"/>
+        <circle class="star" cx="260"  cy="170" r="1.2" style="animation-delay:-1.5s"/>
+        <circle class="star" cx="960"  cy="150" r="1.2" style="animation-delay:-.4s"/>
+        <circle class="star" cx="1200" cy="180" r="1.3" style="animation-delay:-3.3s"/>
+        <circle class="star" cx="60"   cy="220" r="1.3" style="animation-delay:-1.2s"/>
+        <circle class="star" cx="1500" cy="200" r="1.4" style="animation-delay:-.2s"/>
+      </g>
+
+      <!-- awan -->
+      <g class="cloud" filter="url(#soft)">
+        <ellipse cx="330" cy="300" rx="300" ry="20" fill="url(#cloud)"/>
+        <ellipse cx="420" cy="280" rx="160" ry="24" fill="url(#cloud)"/>
+        <ellipse cx="180" cy="312" rx="120" ry="12" fill="url(#cloud)"/>
+      </g>
+      <g class="cloud b" filter="url(#soft)" opacity=".75">
+        <ellipse cx="1180" cy="250" rx="330" ry="18" fill="url(#cloud)"/>
+        <ellipse cx="1260" cy="236" rx="170" ry="22" fill="url(#cloud)"/>
+        <ellipse cx="1080" cy="262" rx="130" ry="11" fill="url(#cloud)"/>
+      </g>
+
+      <!-- cahaya cakrawala -->
+      <ellipse class="glow" cx="800" cy="600" rx="860" ry="320" fill="url(#horizonGlow)"/>
+
+      <!-- burung: tiga siluet terbang pelan -->
+      <g fill="none" stroke="#f2b8a0" stroke-width="2.2" stroke-linecap="round" opacity=".85">
+        <g transform="translate(0 252)"><g class="bird"><path d="M-10 0 Q-5 -7 0 0 Q5 -7 10 0"/></g></g>
+        <g transform="translate(0 280)"><g class="bird b2"><path d="M-7 0 Q-3.5 -5 0 0 Q3.5 -5 7 0"/></g></g>
+        <g transform="translate(0 298)"><g class="bird b3"><path d="M-6 0 Q-3 -4 0 0 Q3 -4 6 0"/></g></g>
+      </g>
+
+      <!-- bukit siluet -->
+      <path d="M-120 580 L0 580 Q200 552 420 584 Q640 556 860 586 Q1080 560 1300 586 Q1480 566 1600 580 L1720 580 L1720 600 L-120 600 Z" fill="#3a1640" opacity=".8"/>
+      <path d="M0 600 L0 548 Q90 500 190 536 Q270 470 380 530 Q470 500 560 556 L600 600 Z" fill="#2a1236"/>
+      <path d="M1600 600 L1600 520 Q1500 470 1410 530 Q1330 480 1230 548 Q1150 520 1080 600 Z" fill="#2a1236"/>
+
+      <!-- garis cakrawala -->
+      <rect x="-120" y="597" width="1840" height="3" fill="#ffb36b" opacity=".5" filter="url(#glowLine)"/>
+
+      <!-- kabut tipis di cakrawala -->
+      <g fill="#ffb36b">
+        <ellipse class="fog"   cx="420"  cy="622" rx="520" ry="14" opacity=".12" filter="url(#soft)"/>
+        <ellipse class="fog b" cx="1120" cy="632" rx="480" ry="12" opacity=".1"  filter="url(#soft)"/>
+      </g>
+
+      <!-- balas -->
+      <polygon points="800,600 440,900 1160,900" fill="#4a2e44" opacity=".4"/>
+
+      <!-- bantalan -->
+      <g stroke="#2a1430" stroke-linecap="butt">
+        <line x1="788"  y1="612" x2="812"  y2="612" stroke-width="2.5"/>
+        <line x1="778"  y1="622" x2="822"  y2="622" stroke-width="3"/>
+        <line x1="764"  y1="636" x2="836"  y2="636" stroke-width="3.5"/>
+        <line x1="747"  y1="654" x2="853"  y2="654" stroke-width="4"/>
+        <line x1="723"  y1="678" x2="877"  y2="678" stroke-width="4.5"/>
+        <line x1="693"  y1="708" x2="907"  y2="708" stroke-width="5.5"/>
+        <line x1="656"  y1="746" x2="944"  y2="746" stroke-width="6.5"/>
+        <line x1="611"  y1="792" x2="989"  y2="792" stroke-width="8"/>
+        <line x1="555"  y1="848" x2="1045" y2="848" stroke-width="9.5"/>
+      </g>
+
+      <!-- rel -->
+      <g stroke="#ff9a5c" stroke-width="14" opacity=".18" filter="url(#glowLine)" stroke-linecap="round">
+        <line x1="800" y1="600" x2="520"  y2="900"/>
+        <line x1="800" y1="600" x2="1080" y2="900"/>
+      </g>
+      <polygon points="800,600 506,900 534,900" fill="url(#rail)"/>
+      <polygon points="800,600 1066,900 1094,900" fill="url(#rail)"/>
+
+      <!-- peron kiri -->
+      <g fill="#140818">
+        <rect x="236" y="640" width="340" height="10" rx="2"/>
+        <rect x="262" y="650" width="7" height="60"/>
+        <rect x="404" y="650" width="7" height="60"/>
+        <rect x="546" y="650" width="7" height="60"/>
+        <rect x="226" y="710" width="350" height="5"/>
+      </g>
+      <rect x="236" y="640" width="340" height="2" fill="#ffb36b" opacity=".5"/>
+
+      <!-- palem kanan: belakang -->
+      <path d="M1468 820 Q1478 740 1500 694" fill="none" stroke="#1f0c2a" stroke-width="7" stroke-linecap="round"/>
+      <g fill="#1f0c2a">
+        <use href="#frond" transform="translate(1500 694) rotate(-170) scale(.9)"/>
+        <use href="#frond" transform="translate(1500 694) rotate(-125) scale(.9)"/>
+        <use href="#frond" transform="translate(1500 694) rotate(-85) scale(.9)"/>
+        <use href="#frond" transform="translate(1500 694) rotate(-45) scale(.9)"/>
+        <use href="#frond" transform="translate(1500 694) rotate(-10) scale(.9)"/>
+        <use href="#frond" transform="translate(1500 694) rotate(25) scale(.9)"/>
+        <circle cx="1500" cy="694" r="6"/>
+      </g>
+
+      <!-- palem kanan: depan -->
+      <path d="M1330 900 Q1344 760 1372 664" fill="none" stroke="#140818" stroke-width="10" stroke-linecap="round"/>
+      <g fill="#140818">
+        <use href="#frond" transform="translate(1372 664) rotate(-168) scale(1.2)"/>
+        <use href="#frond" transform="translate(1372 664) rotate(-128) scale(1.2)"/>
+        <use href="#frond" transform="translate(1372 664) rotate(-92) scale(1.2)"/>
+        <use href="#frond" transform="translate(1372 664) rotate(-55) scale(1.2)"/>
+        <use href="#frond" transform="translate(1372 664) rotate(-18) scale(1.2)"/>
+        <use href="#frond" transform="translate(1372 664) rotate(18) scale(1.2)"/>
+        <use href="#frond" transform="translate(1372 664) rotate(48) scale(1.2)"/>
+        <circle cx="1372" cy="664" r="7"/>
+      </g>
+
+      <!-- tiang LAA: rangka portal di atas rel -->
+      <g fill="#1a0b22">
+        <rect x="603" y="470" width="12" height="256"/>
+        <rect x="985" y="470" width="12" height="256"/>
+        <rect x="598" y="722" width="22" height="5"/>
+        <rect x="980" y="722" width="22" height="5"/>
+        <rect x="600" y="480" width="398" height="6"/>
+        <rect x="603" y="530" width="394" height="5"/>
+      </g>
+      <line x1="600" y1="479" x2="998" y2="479" stroke="#ffb36b" stroke-width="1" opacity=".5"/>
+      <path d="M609 483 L704.5 533 L800 483 L895.5 533 L991 483" fill="none" stroke="#1a0b22" stroke-width="4" stroke-linejoin="round"/>
+      <g fill="#1a0b22">
+        <rect x="701.5" y="535" width="6" height="13"/>
+        <rect x="797"   y="535" width="6" height="13"/>
+        <rect x="892.5" y="535" width="6" height="13"/>
+      </g>
+      <line x1="609" y1="548" x2="991" y2="548" stroke="#1a0b22" stroke-width="1.6"/>
+      <rect x="583" y="596" width="52" height="20" rx="2" fill="#f36c21"/>
+      <text x="609" y="611" text-anchor="middle" font-family="Big Shoulders Display, Impact, sans-serif" font-weight="900" font-size="16" letter-spacing="1" fill="#1a0b22">LAA</text>
+
+      <!-- palang: rel ditutup -->
+      <rect x="598" y="776" width="404" height="16" rx="2" fill="url(#haz)"/>
+      <rect x="588" y="760" width="10" height="56" fill="#1a0b22"/>
+      <rect x="1002" y="760" width="10" height="56" fill="#1a0b22"/>
+      <circle class="lamp" cx="593" cy="756" r="6" fill="#f87171"/>
+      <circle class="lamp alt" cx="1007" cy="756" r="6" fill="#ffb36b"/>
+    </svg>
+  </div>
+  <div class="vignette" aria-hidden="true"></div>
+
+  <img class="logo" src="images/logo-white.png" alt="IRS" />
+
+  <main class="content">
+    <h1 class="rise d1">Something<span class="ol">Big</span></h1>
+    <p class="sub rise d2">Will be coming soon 👀</p>
+    <p class="note rise d3">
+      Rel sedang disiapkan untuk perjalanan baru.<br />
+      <b>Sampai jumpa di peron berikutnya.</b>
+    </p>
+  </main>
+
+</body>
+</html>
