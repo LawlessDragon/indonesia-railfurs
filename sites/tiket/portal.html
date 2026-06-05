@@ -1,0 +1,1271 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Indonesian Railfurs - Gate Tiket & Pembayaran</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=Space+Grotesk:wght@400;500;700&family=Syne:wght@700;800&family=Inter:wght@300;400;500;600;900&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Space Grotesk', sans-serif;
+      background-color: #f3f3f3;
+      background-image: radial-gradient(#d1d1d1 1px, transparent 1px);
+      background-size: 16px 16px;
+    }
+    .ticket-mono { font-family: 'Courier Prime', monospace; }
+    .ticket-header-font { font-family: 'Syne', sans-serif; }
+    
+    .layer-transition:not(.hidden) {
+      animation: ticketSlideIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+    @keyframes ticketSlideIn {
+      from { opacity: 0; transform: scale(0.95) translateY(30px); }
+      to   { opacity: 1; transform: scale(1) translateY(0); }
+    }
+    
+    #proof-file::file-selector-button {
+      background-color: #000000;
+      color: #ffffff;
+      font-size: 11px;
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      padding: 10px 16px;
+      border: 0;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+    #proof-file::file-selector-button:hover { background-color: #222222; }
+    
+    .status-badge {
+      display: inline-block;
+      padding: 0.5rem 1rem;
+      border-radius: 0px;
+      font-weight: 700;
+      text-align: center;
+      font-size: 0.75rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      border: 2px solid #000;
+    }
+    .status-pending { background-color: #facc15; color: #000000; }
+    .status-paid { background-color: #22c55e; color: #ffffff; }
+    .status-failed { background-color: #ef4444; color: #ffffff; }
+    
+    .barcode-strip {
+      height: 48px;
+      background-image:
+        repeating-linear-gradient(90deg, #000 0 1px, transparent 1px 3px),
+        repeating-linear-gradient(90deg, #000 0 2px, transparent 2px 7px),
+        repeating-linear-gradient(90deg, #000 0 1px, transparent 1px 5px);
+      background-size: 50% 100%, 33% 100%, 25% 100%;
+      background-repeat: repeat;
+    }
+    /* Wrapper luar: overflow hidden memotong setengah lingkaran menjadi efek lubang kertas U */
+    .ticket-clip {
+      position: relative;
+      overflow: hidden;
+      border-radius: 0;
+    }
+    /* Lubang kertas: warna sama dg background page, outline hitam */
+    .paper-hole {
+      position: absolute;
+      border-radius: 50%;
+      z-index: 50;
+      pointer-events: none;
+      background: #f3f3f3;
+      border: 4px solid #000;
+    }
+    /* Lubang kiri (paling besar) */
+    .hole-left {
+      width: 56px;
+      height: 56px;
+      left: -28px;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+    /* Lubang kanan (gede) */
+    .hole-right {
+      width: 44px;
+      height: 44px;
+      right: -22px;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+    /* Lubang atas (gede) */
+    .hole-top {
+      width: 44px;
+      height: 44px;
+      left: calc(66.67% - 22px);
+      top: -22px;
+    }
+    /* Lubang bawah (gede) */
+    .hole-bottom {
+      width: 44px;
+      height: 44px;
+      left: calc(66.67% - 22px);
+      bottom: -22px;
+    }
+    /* Mobile: lubang kiri & kanan di sebelah garis putus-putus horizontal */
+    @media (max-width: 767px) {
+      .hole-left {
+        left: -28px;
+        top: 55%;
+        transform: translateY(-50%);
+      }
+      .hole-right {
+        right: -22px;
+        top: 55%;
+        transform: translateY(-50%);
+      }
+      /* Mobile: lubang atas & bawah di tengah horizontal */
+      .hole-top {
+        left: calc(50% - 22px);
+        top: -22px;
+      }
+      .hole-bottom {
+        left: calc(50% - 22px);
+        bottom: -22px;
+      }
+    }
+    /* QR Code protection: disable all interactions */
+    #qr-container {
+      pointer-events: none;
+      user-select: none;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+    }
+    #qr-container img {
+      pointer-events: none;
+      user-select: none;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      -webkit-user-drag: none;
+      -khtml-user-drag: none;
+      -moz-user-drag: none;
+      -o-user-drag: none;
+      user-drag: none;
+    }
+  </style>
+</head>
+<body class="text-black selection:bg-black selection:text-white min-h-screen flex flex-col justify-between">
+
+  <!-- Header / Navigation -->
+  <header class="w-full border-b-4 border-black bg-white py-4 px-6 sticky top-0 z-40">
+    <div class="max-w-6xl mx-auto flex items-center justify-between">
+      <a href="https://sso.railfurs.my.id" class="text-xs font-bold uppercase tracking-widest text-black hover:opacity-75 transition-opacity flex items-center gap-2">
+        <span>←</span> <span>SSO IRS</span>
+      </a>
+      <img src="https://i.ibb.co/VpzHz4sj/logo-bg-transparan.png" class="h-8 w-auto object-contain" alt="IRS Logo">
+      <div class="flex items-center gap-4">
+        <span class="text-[10px] font-bold uppercase tracking-wider bg-black text-white px-2 py-1">JOIN EVENT PORTAL</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="max-w-5xl w-full mx-auto px-4 py-12 flex-grow flex items-center justify-center">
+    
+    <!-- LAYER 1: TICKET ENTRY FORM -->
+    <div id="biodata-layer" class="layer-transition w-full flex flex-col items-center">
+      <div class="ticket-clip">
+        <div class="w-full bg-white border-4 border-black relative flex flex-col md:flex-row">
+          <!-- 4 LUBANG KERTAS (U-Shaped Cutout) -->
+          <div class="paper-hole hole-left"></div>
+          <div class="paper-hole hole-right"></div>
+          <div class="paper-hole hole-top"></div>
+          <div class="paper-hole hole-bottom"></div>
+        
+        <div class="flex-grow p-8 md:p-10 md:w-2/3 border-b-2 md:border-b-0 md:border-r-2 border-dashed border-black relative">
+          <!-- Gunting Icon SVG -->
+          <div class="absolute -bottom-[12px] left-[20%] -translate-x-1/2 md:hidden bg-white px-1 z-30 pointer-events-none">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><line x1="20" y1="4" x2="8.12" y2="15.88"/><line x1="14.47" y1="14.48" x2="20" y2="20"/><line x1="8.12" y1="8.12" x2="12" y2="12"/></svg>
+          </div>
+          <div class="absolute -right-[12px] top-[20%] -translate-y-1/2 hidden md:block bg-white py-1 z-30 pointer-events-none">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transform: rotate(90deg)"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><line x1="20" y1="4" x2="8.12" y2="15.88"/><line x1="14.47" y1="14.48" x2="20" y2="20"/><line x1="8.12" y1="8.12" x2="12" y2="12"/></svg>
+          </div>
+          <div class="flex justify-between items-center mb-6">
+            <span class="text-[10px] font-bold uppercase tracking-[0.2em] bg-black text-white px-3 py-1">PEMESANAN TIKET</span>
+            <span class="ticket-mono text-xs font-bold text-gray-500">SYS-REG // v4.0</span>
+          </div>
+          <h1 class="font-black uppercase tracking-tighter leading-none mb-6 text-4xl md:text-5xl" style="font-family: 'Inter', sans-serif;"><span data-event-title>IRS 4</span>: <span class="text-transparent" style="-webkit-text-stroke: 1px black">INCOMING</span></h1>
+          <div class="border-b-2 border-black pb-4 mb-8">
+            <p class="text-xs font-medium text-gray-500 uppercase tracking-widest">IDENTITAS DIBACA DARI PROFIL ANDA</p>
+          </div>
+          <!--
+            Form ini TIDAH lagi menanyakan biodata. Data diambil server dari
+            tab acc (member) atau Guests (tamu) memakai sesi login, jadi
+            tidak ada duplikasi input dan tidak bisa dipalsukan dari browser.
+            Yang ada di sini hanya tampilan read-only + tier + tombol bayar.
+          -->
+          <form id="biodata-form" class="space-y-6">
+
+            <!-- Status pemuatan profil -->
+            <div id="identity-loading" class="border-2 border-black p-4 flex items-center gap-3">
+              <span class="ticket-mono text-xs font-bold text-gray-500">MEMUAT IDENTITAS...</span>
+            </div>
+
+            <!-- Kartu identitas read-only -->
+            <div id="identity-card" class="hidden border-2 border-black">
+              <div class="flex justify-between items-center bg-black text-white px-3 py-2">
+                <span class="text-[10px] font-bold uppercase tracking-[0.2em]">BOARDING CARD</span>
+                <span id="identity-kind" class="text-[10px] font-bold uppercase tracking-widest"></span>
+              </div>
+              <dl class="divide-y-2 divide-black">
+                <div class="p-3 flex items-start justify-between gap-4">
+                  <dt class="text-[10px] font-bold uppercase tracking-widest text-gray-500 shrink-0 pt-1">NAMA</dt>
+                  <dd id="identity-nama" class="font-bold text-lg text-right break-words">-</dd>
+                </div>
+                <div class="p-3 flex items-start justify-between gap-4">
+                  <dt class="text-[10px] font-bold uppercase tracking-widest text-gray-500 shrink-0 pt-1">NAMA OC</dt>
+                  <dd id="identity-oc" class="font-bold text-lg text-right break-words">-</dd>
+                </div>
+                <div class="p-3 flex items-start justify-between gap-4">
+                  <dt class="text-[10px] font-bold uppercase tracking-widest text-gray-500 shrink-0 pt-1">MEDSOS</dt>
+                  <dd id="identity-medsos" class="font-bold text-sm text-right break-words">-</dd>
+                </div>
+              </dl>
+              <p class="px-3 py-2 bg-gray-50 border-t-2 border-black text-[10px] font-bold uppercase tracking-widest text-gray-500">
+                Data dikunci saat pembelian.
+              </p>
+            </div>
+
+            <!-- Profil belum cukup untuk membeli -->
+            <div id="identity-blocked" class="hidden border-2 border-red-600">
+              <div class="bg-red-600 text-white px-3 py-2">
+                <span class="text-[10px] font-bold uppercase tracking-[0.2em]">PROFIL BELUM LENGKAP</span>
+              </div>
+              <div class="p-4 space-y-3">
+                <p class="text-xs font-bold text-red-600 leading-relaxed">
+                  Nama asli belum diisi di profil kamu, jadi tiket tidak bisa dicetak.
+                </p>
+                <a id="identity-fix-link" href="#"
+                   class="block text-center bg-black text-white border-2 border-black px-4 py-3 text-xs font-bold uppercase tracking-widest hover:bg-white hover:text-black transition-colors">
+                  Lengkapi Profil Sekarang
+                </a>
+              </div>
+            </div>
+
+            <div id="error-msg" class="p-3 border-2 border-red-600 text-red-600 bg-white text-xs font-bold uppercase tracking-wide hidden"></div>
+            <div id="session-timer" class="hidden mt-4 p-4 border-2 border-yellow-500 bg-yellow-50">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <svg class="w-5 h-5 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                  </svg>
+                  <span class="text-xs font-bold text-yellow-700 uppercase tracking-wide">Waktu Tersisa</span>
+                </div>
+                <span id="session-timer-display" class="text-2xl font-black text-yellow-600 font-mono">10:00</span>
+              </div>
+              <p class="text-[10px] text-yellow-600 mt-2">Bayar sebelum waktu habis atau tiket batal otomatis.</p>
+            </div>
+          </form>
+        </div>
+        <div class="w-full md:w-1/3 bg-gray-50 p-8 md:p-10 flex flex-col justify-between relative">
+          <div>
+            <span class="text-[10px] font-bold uppercase tracking-[0.2em] bg-yellow-400 text-black px-3 py-1 inline-block mb-6">TIER SELECT</span>
+            <p class="text-[11px] font-bold uppercase tracking-widest text-gray-500 mb-4">PILIH KELAS PERJALANAN</p>
+            <div id="stock-loading" class="text-xs text-gray-500 mb-4 font-medium">Memuat stok tiket...</div>
+            <div id="stock-error" class="hidden text-xs text-red-600 mb-4 font-bold"></div>
+            <!-- Opsi tier DIBANGUN dari setelan admin (check-stock: order/labels/
+                 stocks), jadi jumlah tier bebas 1..N tanpa menyentuh HTML. -->
+            <div id="tier-list" class="space-y-3 mb-8">
+              <p class="text-xs text-gray-500 font-medium">Memuat pilihan tier...</p>
+            </div>
+          </div>
+          <div>
+            <button type="submit" form="biodata-form" id="submit-btn" class="w-full bg-black text-white border-2 border-black py-4 text-xs font-bold uppercase tracking-widest transition-all duration-300 hover:bg-white hover:text-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none translate-y-0 active:translate-y-1 disabled:opacity-50 disabled:pointer-events-none">
+              CETAK TIKET & BAYAR
+            </button>
+          </div>
+        </div>
+      </div>
+      </div>
+
+      <!-- RIWAYAT TIKET — satu baris Tiket = satu pembelian, dikelompokkan per event -->
+      <section id="history-section" class="hidden w-full mt-10">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-xs font-black uppercase tracking-[0.2em]">Riwayat Tiket Saya</h2>
+          <span id="history-count" class="ticket-mono text-[10px] font-bold text-gray-500"></span>
+        </div>
+        <div id="history-list" class="border-2 border-black divide-y-2 divide-black bg-white"></div>
+        <p class="text-[10px] text-gray-500 uppercase tracking-widest mt-3 leading-relaxed">
+          Tiket dari event sebelumnya tetap tersimpan di sini.
+        </p>
+      </section>
+    </div>
+
+    <!-- LAYER 2: TICKET PAYMENT STAGE -->
+    <div id="payment-layer" class="hidden w-full flex-col items-center">
+      <div class="ticket-clip">
+        <div class="w-full bg-white border-4 border-black relative flex flex-col md:flex-row">
+          <!-- 4 LUBANG KERTAS (U-Shaped Cutout) -->
+          <div class="paper-hole hole-left"></div>
+          <div class="paper-hole hole-right"></div>
+          <div class="paper-hole hole-top"></div>
+          <div class="paper-hole hole-bottom"></div>
+        
+        <div class="flex-grow p-8 md:p-10 md:w-2/3 border-b-2 md:border-b-0 md:border-r-2 border-dashed border-black relative">
+          <!-- Gunting Icon SVG -->
+          <div class="absolute -bottom-[12px] left-[20%] -translate-x-1/2 md:hidden bg-white px-1 z-30 pointer-events-none">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><line x1="20" y1="4" x2="8.12" y2="15.88"/><line x1="14.47" y1="14.48" x2="20" y2="20"/><line x1="8.12" y1="8.12" x2="12" y2="12"/></svg>
+          </div>
+          <div class="absolute -right-[12px] top-[20%] -translate-y-1/2 hidden md:block bg-white py-1 z-30 pointer-events-none">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transform: rotate(90deg)"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><line x1="20" y1="4" x2="8.12" y2="15.88"/><line x1="14.47" y1="14.48" x2="20" y2="20"/><line x1="8.12" y1="8.12" x2="12" y2="12"/></svg>
+          </div>
+          <div class="flex justify-between items-center mb-6">
+            <span class="text-[10px] font-bold uppercase tracking-[0.2em] bg-black text-white px-3 py-1">BOARDING PASS</span>
+            <span class="ticket-mono text-xs font-bold text-gray-500" id="ticket-number">#TX-PENDING</span>
+          </div>
+          <div id="payment-timer" class="mb-6 p-4 border-2 border-yellow-500 bg-yellow-50">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <svg class="w-5 h-5 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                <span class="text-xs font-bold text-yellow-700 uppercase tracking-wide">WAKTU PEMBAYARAN</span>
+              </div>
+              <span id="payment-timer-display" class="text-2xl font-black text-yellow-600 font-mono">10:00</span>
+            </div>
+            <p class="text-[10px] text-yellow-600 mt-2">Unggah bukti sebelum waktu habis atau tiket batal otomatis.</p>
+          </div>
+          <h2 class="font-black uppercase tracking-tighter leading-none mb-6 text-3xl md:text-4xl" style="font-family: 'Inter', sans-serif;"><span data-event-title>IRS 4</span>: <span class="text-transparent" style="-webkit-text-stroke: 1px black">INCOMING</span></h2>
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6 p-4 border-2 border-black bg-gray-50">
+            <div><p class="text-[9px] uppercase tracking-wider text-gray-400 mb-0.5">PASSENGER</p><p class="font-bold text-xs uppercase truncate" id="ticket-passenger">-</p></div>
+            <div><p class="text-[9px] uppercase tracking-wider text-gray-400 mb-0.5">OC / FURSONA</p><p class="font-bold text-xs uppercase truncate" id="ticket-oc">-</p></div>
+            <div><p class="text-[9px] uppercase tracking-wider text-gray-400 mb-0.5">CLASS TIER</p><p class="font-bold text-xs uppercase" id="ticket-tier">-</p></div>
+            <div><p class="text-[9px] uppercase tracking-wider text-gray-400 mb-0.5">TARIF</p><p class="font-black text-xs font-mono" id="ticket-amount">Rp 0</p></div>
+          </div>
+          <div class="pt-4 border-t border-black">
+            <label class="block text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-2">UPLOAD RESI / BUKTI TRANSFER</label>
+            <p class="text-[10px] text-gray-500 mb-3 font-medium leading-relaxed">Pastikan nama pengirim dan detail transaksi terbaca jelas di resi.</p>
+            <input type="file" id="proof-file" accept="image/png, image/jpeg, image/jpg" class="w-full border-2 border-black rounded-none px-3 py-2 mb-3 bg-gray-50"/>
+            <button type="button" id="upload-btn" class="w-full bg-black text-white py-4 text-xs font-bold uppercase tracking-widest transition-colors duration-300 hover:bg-gray-800 border-2 border-black">UPLOAD BUKTI PEMBAYARAN</button>
+            <div id="payment-error" class="mt-3 p-3 border-2 border-red-600 text-red-600 bg-white text-xs font-bold uppercase tracking-wide hidden"></div>
+          </div>
+          <div class="mt-8 pt-4 border-t-2 border-black">
+            <div class="flex justify-between items-end gap-4">
+              <div class="w-full">
+                <div class="barcode-strip"></div>
+                <p class="ticket-mono text-[10px] font-bold tracking-[0.2em] text-gray-500 mt-2 uppercase">NO. TIKET <span id="ticket-barcode-no">-</span></p>
+              </div>
+              <div class="hidden md:block shrink-0 border-2 border-black px-3 py-2 text-center">
+                <p class="text-[9px] font-bold uppercase tracking-widest text-gray-400">GATE</p>
+                <p class="ticket-mono font-black text-sm">01</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="w-full md:w-1/3 bg-gray-50 p-8 md:p-10 flex flex-col justify-between items-center text-center relative">
+          <div class="w-full flex flex-col items-center">
+            <span class="text-[10px] font-bold uppercase tracking-[0.2em] bg-yellow-400 text-black px-3 py-1 mb-4">QRIS GATE</span>
+            <div class="relative inline-block">
+              <div class="absolute -bottom-2 -left-2 w-10 h-10 border-b-[8px] border-l-[8px] border-[#ed1c24] rounded-bl-[6px] z-0"></div>
+              <div class="absolute -top-2 -right-2 w-10 h-10 border-t-[8px] border-r-[8px] border-[#ed1c24] rounded-tr-[6px] z-0"></div>
+              <div class="relative bg-white p-2 z-10 rounded-[4px] shadow-sm">
+                <div id="qr-container" class="flex justify-center"></div>
+              </div>
+            </div>
+            <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wider mt-4 mb-1">NOMINAL</p>
+            <p id="payment-amount" class="text-2xl font-black text-black font-mono">Rp 0</p>
+          </div>
+          <div class="w-full mt-6 pt-4 border-t border-dashed border-gray-300 flex flex-col items-center">
+            <span class="ticket-mono text-[9px] tracking-widest text-gray-400 font-bold uppercase">IRS FAST GATE</span>
+            <div class="w-full h-8 mt-2 bg-[repeating-linear-gradient(90deg,#000,#000_2px,transparent_2px,transparent_6px)]"></div>
+             <span class="ticket-mono text-[9px] tracking-widest text-gray-400 font-bold uppercase mt-2" id="ticket-stub-no">SER-0000-0000-0000</span>
+           </div>
+         </div>
+       </div>
+       </div>
+     </div>
+
+     <!-- LAYER 3: CONFIRMATION STATUS -->
+    <div id="success-layer" class="hidden w-full flex-col items-center">
+      <div class="ticket-clip">
+        <div class="w-full bg-white border-4 border-black relative flex flex-col md:flex-row">
+          <!-- 4 LUBANG KERTAS (U-Shaped Cutout) -->
+          <div class="paper-hole hole-left"></div>
+          <div class="paper-hole hole-right"></div>
+          <div class="paper-hole hole-top"></div>
+          <div class="paper-hole hole-bottom"></div>
+        <div class="flex-grow p-8 md:p-10 md:w-2/3 border-b-2 md:border-b-0 md:border-r-2 border-dashed border-black relative">
+          <div class="flex justify-between items-center mb-6 pt-2">
+            <span id="l3-badge" class="status-badge status-pending">DALAM TINJAUAN</span>
+            <span class="ticket-mono text-xs font-bold text-black" id="success-ticket-number">#TX-COMPLETED</span>
+          </div>
+
+          <h2 class="font-black uppercase tracking-tighter leading-none mb-6 text-3xl md:text-4xl" style="font-family: 'Inter', sans-serif;"><span data-event-title>IRS 4</span>: <span class="text-transparent" style="-webkit-text-stroke: 1px black">INCOMING</span></h2>
+          
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8 p-4 border-2 border-black bg-gray-50">
+            <div><p class="text-[9px] uppercase tracking-wider text-gray-400 mb-0.5">PASSENGER</p><p class="font-bold text-xs uppercase truncate" id="success-passenger">-</p></div>
+            <div><p class="text-[9px] uppercase tracking-wider text-gray-400 mb-0.5">OC / FURSONA</p><p class="font-bold text-xs uppercase truncate" id="success-oc">-</p></div>
+            <div><p class="text-[9px] uppercase tracking-wider text-gray-400 mb-0.5">CLASS TIER</p><p class="font-bold text-xs uppercase" id="success-tier">-</p></div>
+            <div><p class="text-[9px] uppercase tracking-wider text-gray-400 mb-0.5">STATUS PEMBAYARAN</p><p id="success-status-text" class="font-bold text-xs uppercase text-yellow-600">Diproses</p></div>
+          </div>
+
+          <div class="pt-4 border-t border-black">
+            <h4 class="font-bold text-sm uppercase tracking-wider mb-2">INFORMASI</h4>
+            <p id="l3-message" class="text-xs font-light text-gray-600 leading-relaxed">Bukti diterima. Menunggu validasi tim.</p>
+            <div id="contact-help" class="mt-6 flex flex-col sm:flex-row gap-4 hidden">
+              <a href="https://t.me/railfurs_admin1" target="_blank" class="w-full text-center border-2 border-black bg-black text-white font-bold text-xs uppercase py-3 hover:bg-white hover:text-black transition">Hubungi Admin 1</a>
+              <a href="https://t.me/railfurs_admin2" target="_blank" class="w-full text-center border-2 border-black bg-black text-white font-bold text-xs uppercase py-3 hover:bg-white hover:text-black transition">Hubungi Admin 2</a>
+            </div>
+          </div>
+          <div class="mt-8 pt-4 border-t-2 border-black">
+            <div class="flex justify-between items-end gap-4">
+              <div class="w-full">
+                <div class="barcode-strip"></div>
+                <p class="ticket-mono text-[10px] font-bold tracking-[0.2em] text-gray-500 mt-2 uppercase">NO. TIKET <span id="success-barcode-no">-</span></p>
+              </div>
+              <div class="hidden md:block shrink-0 border-2 border-black px-3 py-2 text-center">
+                <p class="text-[9px] font-bold uppercase tracking-widest text-gray-400">GATE</p>
+                <p class="ticket-mono font-black text-sm">01</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+
+        <div class="w-full md:w-1/3 bg-gray-50 p-8 md:p-10 flex flex-col justify-between items-center text-center relative">
+          <div class="w-full flex flex-col items-center justify-center flex-grow">
+            <div id="l3-icon" class="w-16 h-16 border-2 border-black bg-yellow-100 flex items-center justify-center mb-4 text-2xl font-black">⟳</div>
+            <h3 id="l3-title" class="font-bold text-md uppercase tracking-wider mb-2">Dalam Tinjauan</h3>
+            <p id="l3-sub" class="text-[10px] text-gray-500 mb-6">Sistem sedang memeriksa transaksi Anda.</p>
+          </div>
+          <div class="w-full">
+            <button id="btn-print" onclick="window.print()" class="hidden w-full bg-white text-black border-2 border-black py-3 text-xs font-bold uppercase tracking-widest hover:bg-black hover:text-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none">
+              CETAK TIKET (PDF)
+            </button>
+            <div class="w-full mt-6 pt-4 border-t border-dashed border-gray-300 flex flex-col items-center">
+              <span class="ticket-mono text-[9px] tracking-widest text-gray-400 font-bold uppercase">SECURE PASS</span>
+              <div class="w-full h-8 mt-2 bg-[repeating-linear-gradient(90deg,#000,#000_2px,transparent_2px,transparent_6px)]"></div>
+              <span class="ticket-mono text-[9px] tracking-widest text-gray-400 font-bold uppercase mt-2" id="success-stub-no">SER-0000-0000-0000</span>
+             </div>
+           </div>
+         </div>
+       </div>
+       </div>
+     </div>
+   </main>
+
+  <footer class="w-full border-t-4 border-black bg-white py-6 px-6">
+    <div class="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+      <p class="text-gray-400 text-[10px] uppercase tracking-widest">© 2025 Indonesian Railfurs</p>
+      <a href="https://sso.railfurs.my.id" class="text-[10px] uppercase tracking-widest text-gray-500 hover:text-black transition-colors font-bold">SSO.RAILFURS.MY.ID</a>
+    </div>
+  </footer>
+
+  <script type="module">
+    const KEY = 'irs_session_v1';
+    // Kunci ImgBB untuk upload bukti pembayaran.
+// Dit unavoidably terlihat di source — sama seperti di sites/join/form.html.
+// Batasannya: kunci ini hanya bisa dipakai untuk DOMAIN yang diizinkan di
+// dashboard ImgBB. Kalau upload ditolak dengan "code 103", tambahkan
+// tiket.railfurs.my.id di ImgBB > Settings > Allowed referers.
+const IMGBB_KEY = 'GANTI_DENGAN_API_KEY_IMGBB_ANDA';
+
+    const form = document.getElementById('biodata-form');
+    const bioLayer = document.getElementById('biodata-layer');
+    const payLayer = document.getElementById('payment-layer');
+    const successLayer = document.getElementById('success-layer');
+    const submitBtn = document.getElementById('submit-btn');
+    const errorMsg = document.getElementById('error-msg');
+    const paymentAmount = document.getElementById('payment-amount');
+    const qrContainer = document.getElementById('qr-container');
+    const uploadBtn = document.getElementById('upload-btn');
+    const proofFile = document.getElementById('proof-file');
+    const paymentError = document.getElementById('payment-error');
+    
+    // Ticket Elements
+    const ticketNumber = document.getElementById('ticket-number');
+    const ticketPassenger = document.getElementById('ticket-passenger');
+    const ticketOc = document.getElementById('ticket-oc');
+    const ticketTier = document.getElementById('ticket-tier');
+    const ticketAmount = document.getElementById('ticket-amount');
+    
+    // Success Ticket Elements
+    const successTicketNumber = document.getElementById('success-ticket-number');
+    const successPassenger = document.getElementById('success-passenger');
+    const successOc = document.getElementById('success-oc');
+    const successTier = document.getElementById('success-tier');
+    
+    const verificationBadge = document.getElementById('l3-badge');
+    const verificationMessage = document.getElementById('l3-message');
+    const verificationTitle = document.getElementById('l3-title');
+    const verificationSub = document.getElementById('l3-sub');
+    const verificationIcon = document.getElementById('l3-icon');
+    const successStatusText = document.getElementById('success-status-text');
+    const contactHelp = document.getElementById('contact-help');
+    const btnPrint = document.getElementById('btn-print');
+    
+    let session = load();
+    let pollTimer = null;
+    let stockData = {};
+    // Nama tampil tier & event "berjalan" dari setelan admin (check-stock).
+    // Urutan tampil = data.order dari server (jumlah tier bebas 1..N).
+    let tierLabels = {};
+    let tierOrder = [];
+    let currentEventName = null;
+
+    function rupiahShort(n) {
+      const x = Number(n) || 0;
+      if (x >= 1000000) return 'Rp ' + (x / 1000000).toLocaleString('id-ID') + 'JT';
+      if (x >= 1000) return 'Rp ' + (x / 1000).toLocaleString('id-ID') + 'RB';
+      return 'Rp ' + x.toLocaleString('id-ID');
+    }
+
+    function escHtml(s) {
+      return String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    }
+
+    // Bangun opsi tier dari katalog server. ID tier (value radio) stabil dan
+    // disimpan di kolom `tier` tab Tiket; yang tampil = label admin.
+    function bangunTierList(order, labels, stocks) {
+      const box = document.getElementById('tier-list');
+      if (!box) return;
+      tierOrder = (order || []).filter((t) => stocks && stocks[t]);
+      tierLabels = {};
+      if (tierOrder.length === 0) {
+        box.innerHTML = '<p class="text-xs text-gray-500 font-medium">Belum ada tier dijual untuk event ini.</p>';
+        return;
+      }
+      box.innerHTML = tierOrder.map((tier, i) => {
+        const label = String((labels && labels[tier]) || tier);
+        tierLabels[tier] = label;
+        const price = stocks[tier] ? stocks[tier].price : 0;
+        const t = escHtml(tier);
+        return '<label id="tier-' + t.toLowerCase() + '" class="tier-option flex items-center justify-between p-3 border-2 border-black bg-white cursor-pointer hover:bg-gray-100 transition-colors">'
+          + '<span class="font-bold text-sm flex items-center gap-2"><input type="radio" name="tier-option" value="' + t + '"' + (i === 0 ? ' required' : '') + ' class="w-4 h-4 accent-black"> <span data-tier-label="' + t + '">' + escHtml(label.toUpperCase()) + '</span></span>'
+          + '<div class="flex items-center gap-2">'
+          + '<span class="ticket-mono text-xs font-bold bg-black text-white px-2 py-0.5" data-tier-price="' + t + '">' + escHtml(rupiahShort(price)) + '</span>'
+          + '<span class="stock-badge text-[9px] font-bold px-2 py-0.5 bg-gray-200 text-gray-700 rounded" data-tier="' + t + '">-</span>'
+          + '</div></label>';
+      }).join('');
+      // Kembalikan pilihan draft; kalau tier-nya sudah tak ada, buang draft.
+      if (session.draft && session.draft.tier) {
+        const r = box.querySelector('input[name="tier-option"][value="' + String(session.draft.tier).replace(/"/g, '') + '"]');
+        if (r) r.checked = true;
+        else save({ draft: {} });
+      }
+    }
+
+    // Terapkan nama & harga tier + nama event dari setelan admin ke pemilih
+    // tier dan judul halaman. Nilai yang tak lengkap dibiarkan apa adanya.
+    function applyCatalog(data) {
+      if (!data) return;
+      if (data.stocks && typeof data.stocks === 'object') {
+        bangunTierList(data.order, data.labels, data.stocks);
+      }
+      if (data.event) {
+        currentEventName = String(data.event);
+        document.querySelectorAll('[data-event-title]').forEach(el => {
+          el.textContent = currentEventName;
+        });
+      }
+    }
+    let stockPollTimer = null;
+    let sessionTimer = null;
+    let progressInterval = null;
+
+    // Identitas asli diambil dari server. Form tidak punya input biodata.
+    let identity = null;
+    let canBuy = false;
+
+    const identityLoading = document.getElementById('identity-loading');
+    const identityCard = document.getElementById('identity-card');
+    const identityBlocked = document.getElementById('identity-blocked');
+    const identityFixLink = document.getElementById('identity-fix-link');
+    const identityKind = document.getElementById('identity-kind');
+    const identityNama = document.getElementById('identity-nama');
+    const identityOc = document.getElementById('identity-oc');
+    const identityMedsos = document.getElementById('identity-medsos');
+    const historySection = document.getElementById('history-section');
+    const historyList = document.getElementById('history-list');
+    const historyCount = document.getElementById('history-count');
+
+    const REQUEST_SECRET = 'GANTI_DENGAN_REQUEST_SECRET_ANDA';
+
+    async function generateSignature(body) {
+      const timestamp = Date.now().toString();
+      const bodyStr = JSON.stringify(body);
+      const payload = `${timestamp}.${bodyStr}`;
+      
+      const encoder = new TextEncoder();
+      const keyData = encoder.encode(REQUEST_SECRET);
+      const msgData = encoder.encode(payload);
+      
+      const key = await crypto.subtle.importKey(
+        'raw', keyData, { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']
+      );
+      
+      const signature = await crypto.subtle.sign('HMAC', key, msgData);
+      const sigHex = Array.from(new Uint8Array(signature))
+        .map(b => b.toString(16).padStart(2, '0'))
+        .join('');
+      
+      return { signature: sigHex, timestamp };
+    }
+
+    async function secureFetch(url, options = {}) {
+      const body = options.body ? JSON.parse(options.body) : {};
+      const { signature, timestamp } = await generateSignature(body);
+      
+      return fetch(url, {
+        ...options,
+        headers: {
+          ...options.headers,
+          'X-Signature': signature,
+          'X-Timestamp': timestamp
+        }
+      });
+    }
+
+    function load() {
+      try { return JSON.parse(localStorage.getItem(KEY) || '{}'); } catch { return {}; }
+    }
+    function save(patch) {
+      session = { ...session, ...patch, updatedAt: Date.now() };
+      localStorage.setItem(KEY, JSON.stringify(session));
+    }
+    function clearSession() {
+      localStorage.removeItem(KEY);
+      session = {};
+    }
+
+    /**
+     * Ambil identitas + riwayat dari server.
+     *
+     * Ini menggantikan form biodata: nama/nama OC/medsos dibaca dari tab
+     * acc (member) atau Guests (tamu) memakai sesi login, jadi user
+     * tidak perlu mengetik ulang dan datanya tidak bisa dipalsukan dari
+     * browser. Server juga butuh nama untuk mencetak tiket, jadi kalau nama kosong
+     * tombol beli dimatikan dan diarahkan ke halaman profil.
+     */
+    async function loadIdentity() {
+      try {
+        const res = await fetch('/api/me');
+        if (res.status === 401) {
+          window.location.href = (await res.json()).login || 'https://sso.railfurs.my.id/';
+          return null;
+        }
+        if (!res.ok) throw new Error('Gagal memuat profil');
+
+        const data = await res.json();
+        identity = data.profile || {};
+        canBuy = Boolean(data.canBuy);
+
+        identityLoading.classList.add('hidden');
+
+        if (canBuy) {
+          identityCard.classList.remove('hidden');
+          identityBlocked.classList.add('hidden');
+          identityKind.textContent = data.kind === 'guest' ? 'TAMU' : 'ANGGOTA';
+          identityNama.textContent = identity.nama_asli || '-';
+          identityOc.textContent = identity.nama_oc || '-';
+          identityMedsos.textContent = identity.medsos || '-';
+        } else {
+          identityCard.classList.add('hidden');
+          identityBlocked.classList.remove('hidden');
+          identityFixLink.href = data.profileUrl || '#';
+        }
+
+        // Tombol beli mati kalau nama belum ada — lebih baik ditolak di sini
+        // daripada user isi QRIS lalu ditolak server.
+        submitBtn.disabled = !canBuy;
+
+        renderHistory(data.tickets || [], data.event);
+        return data;
+      } catch (err) {
+        identityLoading.innerHTML = '<span class="text-xs font-bold text-red-600 uppercase tracking-wide">Gagal memuat profil. Muat ulang halaman.</span>';
+        return null;
+      }
+    }
+
+    /**
+     * Riwayat pembelian. Satu baris Tiket = satu pembelian.
+     * Event diurutkan terbaru dulu supaya event yang sedang berjalan selalu
+     * di paling atas; tiket event lama tetap terlihat di bawahnya.
+     */
+    function renderHistory(tickets, currentEvent) {
+      if (!tickets || tickets.length === 0) {
+        historySection.classList.add('hidden');
+        return;
+      }
+
+      historySection.classList.remove('hidden');
+      historyCount.textContent = `${tickets.length} PEMESANAN`;
+
+      const rupiah = (v) => `Rp ${Number(String(v).replace(/\D/g, '') || 0).toLocaleString('id-ID')}`;
+      const dash = (v) => v || '-';
+
+      historyList.innerHTML = tickets.map((t) => {
+        const raw = String(t.status || '').toUpperCase();
+        const settled = /PAID|LUNAS|VERIFIED/.test(raw);
+        const failed = /GAGAL|FAILED|TIDAK VALID/.test(raw);
+        const badge = settled
+          ? 'bg-green-600 text-white'
+          : failed
+            ? 'bg-red-600 text-white'
+            : 'bg-yellow-400 text-black';
+        const label = settled ? 'LUNAS' : failed ? 'GAGAL' : 'MENUNGGU';
+        const date = dash(t.created_at).replace('T', ' ').slice(0, 16);
+        const isCurrent = currentEvent && t.event === currentEvent;
+        // Tier tersimpan sebagai ID stabil; tampilkan label katalog bila ada.
+        const tierTampil = (t.tier && tierLabels[t.tier]) || t.tier;
+
+        return `
+          <div class="flex flex-wrap items-center justify-between gap-3 p-4">
+            <div class="min-w-0">
+              <div class="flex items-center gap-2 flex-wrap">
+                <span class="text-sm font-black uppercase">${dash(tierTampil)}</span>
+                <span class="text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 ${badge}">${label}</span>
+                <span class="text-[9px] font-bold uppercase tracking-widest border border-black px-2 py-0.5">${dash(t.event)}</span>
+                ${isCurrent ? '<span class="text-[9px] font-bold uppercase tracking-widest bg-black text-white px-2 py-0.5">EVENT INI</span>' : ''}
+              </div>
+              <p class="text-[10px] text-gray-500 font-mono mt-1">#${dash(t.txId).slice(0, 8).toUpperCase()} / ${date}</p>
+            </div>
+            <span class="ticket-mono text-sm font-bold shrink-0">${rupiah(t.amount)}</span>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function hideAll() {
+      [bioLayer, payLayer, successLayer].forEach(el => {
+        el.classList.add('hidden');
+        el.classList.remove('flex', 'layer-show');
+      });
+    }
+    
+    function showLayer(name) {
+      hideAll();
+      const map = { form: bioLayer, payment: payLayer, result: successLayer };
+      const el = map[name];
+      el.classList.remove('hidden');
+      el.classList.add('flex', 'layer-show');
+      save({ layer: name });
+    }
+
+    function fillTicket(s) {
+      const raw = String(s.txId || '').replace(/-/g, '').toUpperCase();
+      const short = `IRS-${(raw.slice(0, 4) || 'TX00')}-${(raw.slice(4, 8) || '0000')}-${(raw.slice(8, 12) || '0000')}`;
+      const amt = s.amount ? `Rp ${Number(s.amount).toLocaleString('id-ID')}` : 'Rp 0';
+      document.getElementById('ticket-number').textContent = `#${short}`;
+      document.getElementById('ticket-barcode-no').textContent = short;
+      document.getElementById('ticket-stub-no').textContent = `SER-${short}`;
+      document.getElementById('ticket-passenger').textContent = s.nama || '-';
+      document.getElementById('ticket-oc').textContent = s.oc || '-';
+      document.getElementById('ticket-tier').textContent = (s.tier && tierLabels[s.tier]) || s.tier || '-';
+      document.getElementById('ticket-amount').textContent = amt;
+      paymentAmount.textContent = amt;
+      document.getElementById('success-ticket-number').textContent = `#${short}`;
+      document.getElementById('success-barcode-no').textContent = short;
+      document.getElementById('success-stub-no').textContent = `SER-${short}`;
+      document.getElementById('success-passenger').textContent = s.nama || '-';
+      document.getElementById('success-oc').textContent = s.oc || '-';
+      document.getElementById('success-tier').textContent = (s.tier && tierLabels[s.tier]) || s.tier || '-';
+    }
+
+    function renderQR(qris) {
+      qrContainer.innerHTML = '';
+      if (!qris) return;
+      new QRCode(qrContainer, {
+        text: qris, width: 180, height: 180,
+        colorDark: '#000', colorLight: '#fff',
+        correctLevel: QRCode.CorrectLevel.M
+      });
+    }
+
+    async function fetchStock() {
+      const loadingEl = document.getElementById('stock-loading');
+      const errorEl = document.getElementById('stock-error');
+      
+      try {
+        const res = await fetch('/api/check-stock');
+        if (!res.ok) throw new Error('Gagal memuat stok');
+        
+        const data = await res.json();
+        stockData = data.stocks || {};
+        applyCatalog(data);
+        loadingEl.classList.add('hidden');
+        errorEl.classList.add('hidden');
+        
+        updateStockUI();
+      } catch (err) {
+        loadingEl.classList.add('hidden');
+        errorEl.textContent = 'Tidak dapat memuat stok tiket';
+        errorEl.classList.remove('hidden');
+      }
+    }
+
+    function updateStockUI() {
+      // Iterasi urutan dari server (jumlah tier bebas), bukan daftar paku.
+      tierOrder.forEach(tier => {
+        const badge = document.querySelector(`.stock-badge[data-tier="${tier}"]`);
+        const label = document.getElementById(`tier-${tier.toLowerCase()}`);
+        const input = label?.querySelector('input');
+        
+        if (!badge || !stockData[tier]) return;
+        
+        const available = stockData[tier].available || 0;
+        const quota = stockData[tier].quota || 0;
+        
+        badge.textContent = `${available}/${quota}`;
+        
+        if (available <= 0) {
+          badge.className = 'stock-badge text-[9px] font-bold px-2 py-0.5 bg-red-600 text-white rounded';
+          label.classList.add('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
+          label.classList.remove('hover:bg-gray-100');
+          if (input) input.disabled = true;
+        } else if (available <= 5) {
+          badge.className = 'stock-badge text-[9px] font-bold px-2 py-0.5 bg-yellow-500 text-black rounded';
+          label.classList.remove('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
+          label.classList.add('hover:bg-gray-100');
+          if (input) input.disabled = false;
+        } else {
+          badge.className = 'stock-badge text-[9px] font-bold px-2 py-0.5 bg-green-600 text-white rounded';
+          label.classList.remove('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
+          label.classList.add('hover:bg-gray-100');
+          if (input) input.disabled = false;
+        }
+      });
+    }
+
+    function startStockPoll() {
+      fetchStock();
+      stockPollTimer = setInterval(fetchStock, 10000);
+    }
+
+    function stopStockPoll() {
+      if (stockPollTimer) {
+        clearInterval(stockPollTimer);
+        stockPollTimer = null;
+      }
+    }
+
+    function startSessionTimer() {
+      const timerEl = document.getElementById('payment-timer');
+      const displayEl = document.getElementById('payment-timer-display');
+      
+      if (!session.txId) return;
+      
+      const now = Date.now();
+      if (!session.sessionStart) {
+        session.sessionStart = now;
+        save({ sessionStart: now });
+      }
+      
+      const sessionTimeout = 10 * 60 * 1000; // 10 menit
+      const expiresAt = session.sessionStart + sessionTimeout;
+      
+      timerEl.classList.remove('hidden');
+      
+      const updateTimer = () => {
+        const remaining = expiresAt - Date.now();
+        
+        if (remaining <= 0) {
+          clearInterval(sessionTimer);
+          sessionTimer = null;
+          timerEl.innerHTML = `
+            <div class="p-4 border-2 border-red-500 bg-red-50">
+              <div class="flex items-center gap-2 text-red-600">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                </svg>
+                <span class="text-xs font-bold uppercase">Waktu Habis</span>
+              </div>
+              <p class="text-[10px] text-red-600 mt-2">Waktu habis. Memuat ulang halaman.</p>
+            </div>
+          `;
+          setTimeout(() => {
+            clearSession();
+            window.location.reload();
+          }, 2000);
+          return;
+        }
+        
+        const minutes = Math.floor(remaining / 60000);
+        const seconds = Math.floor((remaining % 60000) / 1000);
+        displayEl.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        
+        if (remaining < 60000) {
+          displayEl.classList.remove('text-yellow-600');
+          displayEl.classList.add('text-red-600');
+          timerEl.classList.remove('border-yellow-500', 'bg-yellow-50');
+          timerEl.classList.add('border-red-500', 'bg-red-50');
+        }
+      };
+      
+      updateTimer();
+      sessionTimer = setInterval(updateTimer, 1000);
+    }
+
+    function stopSessionTimer() {
+      if (sessionTimer) {
+        clearInterval(sessionTimer);
+        sessionTimer = null;
+      }
+      const timerEl = document.getElementById('payment-timer');
+      if (timerEl) timerEl.classList.add('hidden');
+    }
+
+    function markProgress() {
+      if (session.txId) {
+        save({ lastProgress: Date.now() });
+      }
+    }
+
+    function setResultUI(status) {
+      btnPrint.classList.add('hidden');
+      contactHelp.classList.add('hidden');
+
+      if (status === 'PAID') {
+        verificationBadge.className = 'status-badge status-paid';
+        verificationBadge.textContent = 'Sukses';
+        verificationIcon.className = 'w-16 h-16 border-2 border-black bg-green-100 flex items-center justify-center mb-4 text-2xl font-black';
+        verificationIcon.innerHTML = '✓';
+        verificationTitle.textContent = 'Pembayaran Selesai';
+        verificationSub.textContent = 'Tiket Anda telah lunas.';
+        successStatusText.textContent = 'Lunas / Terverifikasi';
+        successStatusText.className = 'font-bold text-xs uppercase text-green-600';
+        verificationMessage.textContent = 'Lunas. Simpan atau cetak tiket ini.';
+        btnPrint.classList.remove('hidden');
+      } else if (status === 'FAILED') {
+        verificationBadge.className = 'status-badge status-failed';
+        verificationBadge.textContent = 'Tidak Valid';
+        verificationIcon.className = 'w-16 h-16 border-2 border-black bg-red-100 flex items-center justify-center mb-4 text-2xl font-black';
+        verificationIcon.innerHTML = '✗';
+        verificationTitle.textContent = 'Verifikasi Tertunda';
+        verificationSub.textContent = 'Hubungi layanan admin untuk konfirmasi.';
+        successStatusText.textContent = 'Menunggu Konfirmasi Manual';
+        successStatusText.className = 'font-bold text-xs uppercase text-red-600';
+        verificationMessage.textContent = 'Transaksi belum terverifikasi otomatis. Hubungi admin lewat kontak di bawah.';
+        contactHelp.classList.remove('hidden');
+      } else {
+        verificationBadge.className = 'status-badge status-pending';
+        verificationBadge.textContent = 'Dalam Tinjauan';
+        verificationIcon.className = 'w-16 h-16 border-2 border-black bg-yellow-100 flex items-center justify-center mb-4 text-2xl font-black';
+        verificationIcon.innerHTML = '⟳';
+        verificationTitle.textContent = 'Dalam Tinjauan';
+        verificationSub.textContent = 'Sistem sedang memeriksa transaksi Anda.';
+        successStatusText.textContent = 'Diproses';
+        successStatusText.className = 'font-bold text-xs uppercase text-yellow-600';
+        verificationMessage.textContent = 'Bukti diterima. Menunggu validasi tim.';
+      }
+    }
+
+    async function pollStatus(txId) {
+      if (pollTimer) clearInterval(pollTimer);
+      
+      const tick = async () => {
+        try {
+          const res = await fetch(`/api/check-status?txId=${encodeURIComponent(txId)}`);
+          const data = await res.json();
+          if (!res.ok) {
+            // Jika data baris terhapus di spreadsheet oleh admin -> reset otomatis ke awal
+            if (res.status === 404) {
+              clearInterval(pollTimer);
+              pollTimer = null;
+              clearSession();
+              window.location.reload();
+            }
+            return;
+          }
+          
+          if (data.status === 'PAID' || data.status === 'FAILED') {
+            clearInterval(pollTimer);
+            pollTimer = null;
+            save({ status: data.status, proof_url: data.proof_url, layer: 'result' });
+            setResultUI(data.status);
+          }
+        } catch {}
+      };
+      
+      setResultUI(session.status || 'PENDING');
+      await tick();
+      pollTimer = setInterval(tick, 3000);
+    }
+
+    // Tidak ada input biodata lagi, jadi tidak ada draft teks yang disimpan.
+    // Yang disimpan hanya tier pilihan + state pembayaran.
+
+    // Pilihan tier: delegasi di wadah (opsi dibangun ulang tiap fetch stok,
+    // jadi listener statis per radio akan hilang). Draft tersimpan per pilih.
+    const tierListBox = document.getElementById('tier-list');
+    if (tierListBox) {
+      tierListBox.addEventListener('change', (e) => {
+        const r = e.target && e.target.closest ? e.target.closest('input[name="tier-option"]') : null;
+        if (!r) return;
+        save({ draft: { tier: r.value } });
+        markProgress();
+      });
+    }
+    
+    // Track progress on payment layer
+    proofFile.addEventListener('change', markProgress);
+    uploadBtn.addEventListener('click', markProgress);
+
+    // Restore session
+    (function restore() {
+      startStockPoll();
+
+      // Identitas & riwayat dimuat dari server, bukan dari form.
+      // Nama event ikut dari setelan admin (tab Pengaturan) supaya ganti event
+      // cukup lewat panel, tidak perlu sentuh HTML/config.
+      loadIdentity().then((data) => {
+        if (data && (data.eventNama || data.event)) {
+          document.querySelectorAll('[data-event-title]').forEach(el => {
+            el.textContent = data.eventNama || data.event;
+          });
+        }
+      });
+
+      // Cross-check session dengan backend
+      if (session.txId) {
+        fetch(`/api/check-status?txId=${encodeURIComponent(session.txId)}`)
+          .then(res => {
+            if (res.status === 404) {
+              clearSession();
+              window.location.reload();
+            }
+          });
+      }
+
+      // Pilihan draft dikembalikan oleh bangunTierList() setelah opsi tier
+      // selesai dibangun dari katalog server (bukan di sini: DOM-nya belum ada
+      // saat restore berjalan).
+      fillTicket(session);
+      if (session.layer === 'payment' && session.txId && session.qris) {
+        showLayer('payment');
+        renderQR(session.qris);
+        stopStockPoll();
+        startSessionTimer();
+      } else if (session.layer === 'result' && session.txId) {
+        showLayer('result');
+        setResultUI(session.status || 'PENDING');
+        pollStatus(session.txId);
+        stopStockPoll();
+        stopSessionTimer();
+      } else {
+        showLayer('form');
+      }
+    })();
+
+    form.addEventListener('submit', async e => {
+      e.preventDefault();
+      errorMsg.classList.add('hidden');
+      const tierEl = document.querySelector('input[name="tier-option"]:checked');
+      if (!tierEl) {
+        errorMsg.textContent = 'Pilih kelas tiket terlebih dahulu';
+        errorMsg.classList.remove('hidden');
+        return;
+      }
+
+      // Nama sudah ada di profil. Kalau belum, server juga akan menolak —
+      // tapi dicegah di sini supaya user tidak sampai ke layar QRIS.
+      if (!canBuy || !identity || !identity.nama_asli) {
+        errorMsg.textContent = 'Nama belum ada di profil. Lengkapi profil dulu sebelum membeli tiket.';
+        errorMsg.classList.remove('hidden');
+        return;
+      }
+
+      const selectedTier = tierEl.value;
+      if (stockData[selectedTier] && stockData[selectedTier].available <= 0) {
+        errorMsg.textContent = `Tiket ${tierLabels[selectedTier] || selectedTier} sudah habis`;
+        errorMsg.classList.remove('hidden');
+        fetchStock();
+        return;
+      }
+
+      const nama = identity.nama_asli;
+      const oc = identity.nama_oc || '';
+      const medsos = identity.medsos || '';
+      const tier = tierEl.value;
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'MENCETAK TIKET...';
+
+      try {
+        let reservationId = null;
+
+        try {
+          const reserveRes = await secureFetch('/api/reserve-ticket', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ tier })
+          });
+          const reserveData = await reserveRes.json();
+          if (reserveRes.ok && reserveData.reservationId) {
+            reservationId = reserveData.reservationId;
+          }
+        } catch {}
+
+        // Body HANYA tier + reservationId. Nama/OC/medsos dibaca server dari
+        // tab profil memakai sesi — tidak pernah dikirim dari browser.
+        const res = await secureFetch('/api/init-payment', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tier, reservationId })
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          if (data.code === 'PROFILE_INCOMPLETE') {
+            window.location.href = data.profileUrl;
+            return;
+          }
+          throw new Error(data.error || 'Gagal membuat tiket');
+        }
+        
+        stopStockPoll();
+        
+        save({
+          layer: 'payment',
+          txId: data.txId,
+          qris: data.qris,
+          amount: data.amount,
+          nama, oc, tier, medsos,
+          status: null,
+          sessionStart: Date.now()
+        });
+        fillTicket(load());
+        showLayer('payment');
+        renderQR(data.qris);
+        startSessionTimer();
+      } catch (err) {
+        errorMsg.textContent = err.message;
+        errorMsg.classList.remove('hidden');
+        fetchStock();
+      } finally {
+        // Jangan hidupkan lagi kalau profil memang belum lengkap.
+        submitBtn.disabled = !canBuy;
+        submitBtn.textContent = 'CETAK TIKET & BAYAR';
+      }
+    });
+
+    uploadBtn.addEventListener('click', async () => {
+      const file = proofFile.files[0];
+      if (!file) {
+        paymentError.textContent = 'Pilih file bukti terlebih dahulu';
+        paymentError.classList.remove('hidden');
+        return;
+      }
+      if (!session.txId) {
+        paymentError.textContent = 'Sesi tiket hilang. Isi form ulang.';
+        paymentError.classList.remove('hidden');
+        return;
+      }
+      
+      paymentError.classList.add('hidden');
+      uploadBtn.disabled = true;
+      uploadBtn.textContent = 'Mengirim Bukti...';
+
+      try {
+        // Upload ke ImgBB LANGSUNG dari browser.
+        // ImgBB memblokir IP datacenter ("forbidden to use this website"),
+        // jadi Vercel tidak bisa mengunggah sendiri. Dari browser IP rumah
+        // normal, sama seperti form pendaftaran di join.railfurs.my.id.
+        uploadBtn.textContent = 'Mengunggah Gambar...';
+        const imgFd = new FormData();
+        imgFd.append('image', file);
+        const imgRes = await fetch('https://api.imgbb.com/1/upload?key=' + IMGBB_KEY, {
+          method: 'POST',
+          body: imgFd
+        });
+        const imgData = await imgRes.json();
+        if (!imgData.success || !imgData.data || !imgData.data.url) {
+          throw new Error('Upload gambar gagal. ' + (imgData.error?.message || 'Coba ganti koneksi lalu ulangi.'));
+        }
+
+        // Kirim HANYA URL ke server — server tulis ke sheet lalu jalankan OCR.
+        uploadBtn.textContent = 'Memverifikasi Bukti...';
+        const res = await fetch('/api/upload-proof', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ txId: session.txId, fileUrl: imgData.data.url })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Gagal mengirim bukti');
+
+        save({ layer: 'result', status: 'PENDING', proof_url: data.fileUrl });
+        fillTicket(load());
+        showLayer('result');
+        setResultUI('PENDING');
+        pollStatus(session.txId);
+        stopSessionTimer();
+      } catch (err) {
+        paymentError.textContent = err.message;
+        paymentError.classList.remove('hidden');
+      } finally {
+        uploadBtn.disabled = false;
+        uploadBtn.textContent = 'UPLOAD BUKTI PEMBAYARAN';
+      }
+    });
+
+    // Auto redirect untuk path yang mirip/salah
+    (function(){
+      var redirectMap = {
+        'buy': '/index.html',
+        'beli': '/index.html',
+        'payment': '/index.html',
+        'pembayaran': '/index.html',
+        'qris': '/index.html',
+        'ticket': '/index.html',
+        'tiket': '/index.html',
+        'register': '/index.html'
+      };
+      var path = window.location.pathname.toLowerCase().replace(/^\/+|\/+$/g, '').split('/')[0];
+      if (path && redirectMap[path]) {
+        window.location.replace(redirectMap[path]);
+      }
+    })();
+
+    // Pengawas diam 15 menit: tanpa aktivitas, lempar ke hub SSO (menerima
+    // kembali tanpa login selama sesi 30 menitnya hidup). Aktivitas juga
+    // menyentuh sesi via /sentuh (throttle 5 menit).
+    (function () {
+      var IRS_DIAM_MS = 15 * 60 * 1000;
+      var IRS_SENTUH_JEDA_MS = 5 * 60 * 1000;
+      var IRS_HUB = 'https://sso.railfurs.my.id/';
+      var IRS_SENTUH_URL = 'https://sso.railfurs.my.id/sentuh';
+      var diamTimer = 0, sentuhTerakhir = 0;
+      function diamReset() {
+        if (diamTimer) window.clearTimeout(diamTimer);
+        diamTimer = window.setTimeout(function () {
+          // Layar hasil (tiket lunas) di-hold: tidak dipantulkan walau diam,
+          // supaya bukti pembelian tetap terbuka sampai event berakhir.
+          var hasil = document.getElementById('success-layer');
+          if (hasil && !hasil.classList.contains('hidden')) return;
+          window.location.href = IRS_HUB;
+        }, IRS_DIAM_MS);
+        var kini = Date.now();
+        if (kini - sentuhTerakhir > IRS_SENTUH_JEDA_MS) {
+          sentuhTerakhir = kini;
+          try {
+            fetch(IRS_SENTUH_URL, { credentials: 'include' }).catch(function () {});
+          } catch (e) {}
+        }
+      }
+      ['mousemove', 'keydown', 'scroll', 'touchstart', 'click'].forEach(function (ev) {
+        window.addEventListener(ev, diamReset, { passive: true });
+      });
+      diamReset();
+    })();
+
+    // Global error handler
+    window.onerror = function(msg, url, line, col, error) {
+      console.error('[Error]', msg, 'at', url, ':', line);
+      return false;
+    };
+
+    window.addEventListener('unhandledrejection', function(event) {
+      console.error('[Unhandled Promise]', event.reason);
+    });
+  </script>
+</body>
+</html>
