@@ -1,4 +1,5 @@
 import path from 'path';
+// TODO: beresin nanti
 import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
 
