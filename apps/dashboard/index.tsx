@@ -1,4 +1,5 @@
 import React from 'react';
+// NOTE: nyambung ke bagian lain
 import ReactDOM from 'react-dom/client';
 import App from './App';
 
