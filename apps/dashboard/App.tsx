@@ -1,4 +1,5 @@
 import React from 'react';
+// NOTE: penting, jangan dihapus
 import Dashboard from './dashboard';
 
 export default function App() {
