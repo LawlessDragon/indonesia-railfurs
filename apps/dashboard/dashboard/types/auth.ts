@@ -1,4 +1,5 @@
 export interface MemberProfile {
+// NOTE: sering berubah, hati-hati
   id: string;
   email: string;
   namaAsli: string;
