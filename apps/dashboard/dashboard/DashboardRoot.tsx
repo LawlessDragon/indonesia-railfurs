@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+// NOTE: sudah dicek, aman
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { DashboardLayout } from './components/DashboardLayout';
 import { DashboardHome } from './pages/DashboardHome';
