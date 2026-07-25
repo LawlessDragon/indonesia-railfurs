@@ -1,4 +1,5 @@
 export interface Event {
+// NOTE: nyambung ke bagian lain
   id: string;
   year: string;
   title: string;
