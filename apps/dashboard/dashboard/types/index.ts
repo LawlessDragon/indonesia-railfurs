@@ -1,4 +1,5 @@
 export type RegistrationStatus = 'verified' | 'pending' | 'rejected';
+// NOTE: jangan diubah sembarangan dulu
 
 export interface UserProfile {
   id: string;
