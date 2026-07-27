@@ -1,4 +1,5 @@
 export interface UserProfile {
+// NOTE: bagian ini pernah bikin bug
   id: string;
   email: string;
   namaAsli: string;
