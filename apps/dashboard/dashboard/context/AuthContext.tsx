@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+// TODO: rapihin nanti
 import { UserProfile, JoyrideHistoryItem, UpcomingTicket, BookedTicket, RegistrationStatus } from '../types';
 import { INITIAL_USER, MOCK_APPLICANT_PENDING, MOCK_APPLICANT_REJECTED, MOCK_GUEST, GUEST_SESSION_MS, INITIAL_JOYRIDES, UPCOMING_TICKETS, INITIAL_BOOKED_TICKETS } from '../data/mockUser';
 
