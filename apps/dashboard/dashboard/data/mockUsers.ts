@@ -1,4 +1,5 @@
 import { MemberProfile } from '../types/auth';
+// NOTE: nyambung ke bagian lain
 
 export const DEFAULT_MEMBER: MemberProfile = {
   id: 'irs-mem-042',
