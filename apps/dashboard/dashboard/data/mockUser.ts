@@ -1,4 +1,5 @@
 import { UserProfile, JoyrideHistoryItem, UpcomingTicket, BookedTicket } from '../types';
+// NOTE: jangan diubah sembarangan dulu
 
 export const INITIAL_USER: UserProfile = {
   id: 'usr_001',
