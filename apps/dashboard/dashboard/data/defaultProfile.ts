@@ -1,4 +1,5 @@
 import { UserProfile, CommunityTrip } from '../types/dashboard';
+// TODO: rapihin nanti
 
 export const AVATAR_PRESETS = [
   {
