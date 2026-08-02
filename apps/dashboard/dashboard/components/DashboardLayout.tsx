@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+// NOTE: penting, jangan dihapus
 import { useAuth } from '../context/AuthContext';
 import { DashboardView } from '../types/dashboard';
 import { 
