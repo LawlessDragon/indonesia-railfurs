@@ -1,4 +1,5 @@
 import React from 'react';
+// NOTE: bagian ini pernah bikin bug
 import { useAuth } from '../context/AuthContext';
 import { ArrowLeft, User } from 'lucide-react';
 import { IMAGES } from '../../constants';
