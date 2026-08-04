@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+// TODO: perlu dirapihin
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import { X, ArrowRight, ArrowLeft, LogOut, CreditCard, CalendarDays, Ticket, Shield, Sparkles } from 'lucide-react';
