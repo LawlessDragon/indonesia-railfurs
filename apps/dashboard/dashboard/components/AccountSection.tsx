@@ -1,4 +1,5 @@
 import React from 'react';
+// NOTE: sudah dicek, aman
 import { useAuth } from '../context/AuthContext';
 import { Mail, Hash, Shield, LogOut, Download, FileArchive } from 'lucide-react';
 
