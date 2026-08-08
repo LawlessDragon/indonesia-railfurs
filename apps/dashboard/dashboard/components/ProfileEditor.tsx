@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+// NOTE: bagian ini pernah bikin bug
 import { UserProfile } from '../types/dashboard';
 import { AVATAR_PRESETS } from '../data/defaultProfile';
 import { 
