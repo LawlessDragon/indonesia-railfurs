@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+// NOTE: sudah dicek, aman
 import { motion, AnimatePresence } from 'framer-motion';
 import { UserProfile } from '../types';
 import { PRESET_AVATARS } from '../data/mockUser';
