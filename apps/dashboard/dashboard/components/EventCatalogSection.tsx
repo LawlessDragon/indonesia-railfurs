@@ -1,4 +1,5 @@
 import React from 'react';
+// NOTE: penting, jangan dihapus
 import { useAuth } from '../context/AuthContext';
 import { Calendar, MapPin, Train, Clock, ArrowRight, Sparkles } from 'lucide-react';
 
