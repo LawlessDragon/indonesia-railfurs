@@ -1,4 +1,5 @@
 import React from 'react';
+// NOTE: sering berubah, hati-hati
 import { CommunityTrip } from '../types/dashboard';
 import { Train, Calendar, MapPin, ArrowRight } from 'lucide-react';
 
