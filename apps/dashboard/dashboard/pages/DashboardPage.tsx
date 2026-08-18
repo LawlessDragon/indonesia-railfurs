@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+// NOTE: bagian ini pernah bikin bug
 import { useAuth } from '../context/AuthContext';
 import { DashboardHeader } from '../components/DashboardHeader';
 import { DashboardSidebarDrawer, DashboardViewMode } from '../components/DashboardSidebarDrawer';
