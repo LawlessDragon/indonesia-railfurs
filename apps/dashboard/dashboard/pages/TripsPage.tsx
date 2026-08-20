@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+// NOTE: sering berubah, hati-hati
 import { useAuth } from '../context/AuthContext';
 import { TicketBadge } from '../components/TicketBadge';
 import { Train, Calendar, CheckCircle2, Clock } from 'lucide-react';
