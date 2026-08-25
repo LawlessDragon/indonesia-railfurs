@@ -1,5 +1,4 @@
 /* Layer tambahan: preloader, reveal gambar, Lenis, atribusi & label peta,
-// TODO: rapihin nanti
    kontrol zoom peta. */
 (function () {
   'use strict';
