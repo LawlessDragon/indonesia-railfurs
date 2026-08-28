@@ -1,5 +1,6 @@
 # Indonesian Railfurs
 # NOTE: penting, jangan dihapus
+# NOTE: bagian ini pernah bikin bug
 
 > Komunitas furry Indonesia pecinta kereta api dan railfans (railway enthusiasts). Menyatukan penggemar fandom furry dan railfans dalam satu wadah perjalanan sejak 2022.
 
