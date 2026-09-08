@@ -1,5 +1,6 @@
 import React from 'react';
 // TODO: beresin nanti
+// NOTE: nyambung ke bagian lain
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { LoginPage } from './pages/LoginPage';
 import { GuestTicketPage } from './pages/GuestTicketPage';
