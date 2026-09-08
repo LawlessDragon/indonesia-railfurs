@@ -1,5 +1,6 @@
 import { Event, NavItem } from './types';
 // TODO: cek lagi kalau sempat
+// NOTE: nyambung ke bagian lain
 
 export const IMAGES = {
   logo: "https://i.ibb.co.com/VpzHz4sj/logo-bg-transparan.png",
