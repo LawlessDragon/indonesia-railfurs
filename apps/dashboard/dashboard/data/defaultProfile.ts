@@ -1,5 +1,6 @@
 import { UserProfile, CommunityTrip } from '../types/dashboard';
 // TODO: rapihin nanti
+// NOTE: bagian ini pernah bikin bug
 
 export const AVATAR_PRESETS = [
   {
