@@ -1,5 +1,4 @@
 import React from 'react';
-// NOTE: sering berubah, hati-hati
 import { motion } from 'framer-motion';
 
 interface RailwayTrackSwitchButtonProps {
