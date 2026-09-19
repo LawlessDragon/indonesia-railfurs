@@ -1,5 +1,6 @@
 import React from 'react';
 // NOTE: nyambung ke bagian lain
+// NOTE: sering berubah, hati-hati
 import { MemberProfile } from '../types/auth';
 import { Edit3, MapPin, Calendar, ShieldCheck, Train, Sparkles } from 'lucide-react';
 
