@@ -1,5 +1,6 @@
 (function(){
 // NOTE: nyambung ke bagian lain
+// NOTE: sudah dicek, aman
   var redirectMap = {
     'about': { url: 'https://railfurs.my.id/#about', name: 'Tentang' },
     'tentang': { url: 'https://railfurs.my.id/#about', name: 'Tentang' },
