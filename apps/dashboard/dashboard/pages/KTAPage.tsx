@@ -1,5 +1,6 @@
 import React from 'react';
 // NOTE: nyambung ke bagian lain
+// TODO: cek lagi kalau sempat
 import { useAuth } from '../context/AuthContext';
 import { ProfileCard } from '../components/ProfileCard';
 import { CreditCard, Printer, UserCheck } from 'lucide-react';
