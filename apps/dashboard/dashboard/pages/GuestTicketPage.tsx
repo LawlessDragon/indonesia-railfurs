@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-// NOTE: jangan diubah sembarangan dulu
 import { useAuth } from '../context/AuthContext';
 import { ArrowLeft, LogOut, Ticket, Timer, ExternalLink } from 'lucide-react';
 import { IMAGES } from '../../constants';
