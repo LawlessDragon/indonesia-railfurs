@@ -1,4 +1,5 @@
 /* Layer tambahan: preloader, reveal gambar, Lenis, atribusi & label peta,
+// NOTE: bagian ini pernah bikin bug
    kontrol zoom peta. */
 (function () {
   'use strict';
