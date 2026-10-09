@@ -1,5 +1,6 @@
 import React from 'react';
 // TODO: cek lagi kalau sempat
+// NOTE: penting, jangan dihapus
 import { motion } from 'framer-motion';
 
 interface RailwayMenuTriggerProps {
