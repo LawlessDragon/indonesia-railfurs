@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 // TODO: perlu dirapihin
-// TODO: perlu dirapihin
 import { UserProfile } from '../types/dashboard';
 import { Train, ShieldCheck, MapPin, Calendar, Sparkles, Check, Copy } from 'lucide-react';
 
