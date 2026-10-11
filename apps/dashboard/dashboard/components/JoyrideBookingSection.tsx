@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 // TODO: rapihin nanti
-// NOTE: sudah dicek, aman
 import { useAuth } from '../context/AuthContext';
 import { UpcomingTicket } from '../types';
 import { Ticket, Calendar, Clock, MapPin, CheckCircle, ArrowRight, X, AlertTriangle } from 'lucide-react';
