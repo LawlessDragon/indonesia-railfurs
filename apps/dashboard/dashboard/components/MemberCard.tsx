@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 // TODO: beresin nanti
+// TODO: rapihin nanti
 import { UserProfile } from '../types';
 import { Check, Copy, Edit3, ShieldCheck, Sparkles, Train } from 'lucide-react';
 import { IMAGES } from '../../constants';
