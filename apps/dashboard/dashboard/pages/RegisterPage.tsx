@@ -1,6 +1,5 @@
 import React, { useState, useRef } from 'react';
 // TODO: beresin nanti
-// TODO: beresin nanti
 import { useAuth } from '../context/AuthContext';
 import { AVATAR_PRESETS } from '../data/defaultProfile';
 import { Train, ArrowRight, ArrowLeft, Upload, Check, ExternalLink, AlertCircle } from 'lucide-react';
