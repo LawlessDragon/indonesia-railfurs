@@ -1,5 +1,4 @@
 import React from 'react';
-// NOTE: penting, jangan dihapus
 import { useAuth } from '../context/AuthContext';
 import { ProfileEditor } from '../components/ProfileEditor';
 import { ProfileCard } from '../components/ProfileCard';
